@@ -157,7 +157,7 @@
                                     <option value="dug-well">Dug Well (Traditional open well)</option>
                                     <option value="drilled-well">Drilled Well (Machine drilled)</option>
                                     <option value="tube-well">Tube Well (Deep bore with casing)</option>
-                                    <option value="hand-pump">Hand Pump Well</option>
+                                    <option value="hand-pump">Hand Pump</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
@@ -558,13 +558,6 @@
                     setTimeout(() => {
                         loadBorewellWeather(borewell._id, borewell.location.latitude, borewell.location.longitude);
                     }, 100);
-                });
-
-                // Add hover effects
-                marker.on('mouseover', function() {
-                    if (!marker.isPopupOpen()) {
-                        this.openPopup();
-                    }
                 });
             });
         }
