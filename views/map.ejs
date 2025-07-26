@@ -476,17 +476,32 @@
                     })
                 });
                 
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response. Please make sure you are logged in.');
+                }
+                
                 const result = await response.json();
                 
                 if (!result.success) {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Prediction failed');
                 }
                 
                 showGroundwaterPredictionModal(result.data);
                 
             } catch (error) {
                 console.error('Groundwater prediction error:', error);
-                showNotification('Failed to predict groundwater level: ' + error.message, 'error');
+                let errorMessage = error.message;
+                if (error.message.includes('Unexpected token')) {
+                    errorMessage = 'Authentication required. Please log in to use the prediction feature.';
+                }
+                showNotification('Failed to predict groundwater level: ' + errorMessage, 'error');
             }
         }
 
