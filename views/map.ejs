@@ -312,7 +312,228 @@
             }
         }
 
-        // Add borewells to map with enhanced markers
+        // Load weather for specific borewell
+        async function loadBorewellWeather(borewellId, lat, lng) {
+            const weatherContainer = document.getElementById(`weather-${borewellId}`);
+            if (!weatherContainer) return;
+            
+            weatherContainer.innerHTML = '<div class="weather-loading-small"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            
+            try {
+                const response = await fetch(`/api/weather/current?lat=${lat}&lng=${lng}`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                
+                const data = result.data;
+                
+                weatherContainer.innerHTML = `
+                    <div class="borewell-weather-info">
+                        <div class="weather-compact">
+                            <div class="weather-temp">
+                                <img src="https://openweathermap.org/img/wn/${data.icon}.png" alt="${data.description}">
+                                <span class="temp">${data.temperature}°C</span>
+                            </div>
+                            <div class="weather-details-compact">
+                                <div class="weather-item-small">
+                                    <i class="fas fa-tint"></i>
+                                    <span>${data.humidity}%</span>
+                                </div>
+                                <div class="weather-item-small">
+                                    <i class="fas fa-wind"></i>
+                                    <span>${data.windSpeed} km/h</span>
+                                </div>
+                                <div class="weather-item-small">
+                                    <i class="fas fa-thermometer-half"></i>
+                                    <span>${data.pressure} hPa</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="weather-desc">${data.description}</div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Borewell weather error:', error);
+                weatherContainer.innerHTML = `
+                    <div class="weather-error-small">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Weather unavailable</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Get weather forecast
+        async function getForecast(lat, lng, borewellId = null) {
+            try {
+                const response = await fetch(`/api/weather/forecast?lat=${lat}&lng=${lng}&days=5`);
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                
+                showForecastModal(result, borewellId);
+                
+            } catch (error) {
+                console.error('Forecast error:', error);
+                showNotification('Failed to load weather forecast', 'error');
+            }
+        }
+
+        // Predict water level based on weather
+        async function predictWaterLevel(temperature, precipitation, humidity, pressure) {
+            try {
+                const response = await fetch(`/api/weather/predict-water-level?temperature=${temperature}&precipitation=${precipitation}&humidity=${humidity}&pressure=${pressure}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                
+                showWaterLevelPrediction(result.prediction);
+                
+            } catch (error) {
+                console.error('Water level prediction error:', error);
+                showNotification('Failed to predict water level', 'error');
+            }
+        }
+
+        // Show forecast modal
+        function showForecastModal(forecastData, borewellId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal forecast-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-calendar-alt"></i> 5-Day Weather Forecast</h2>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="forecast-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ${forecastData.city}, ${forecastData.country}
+                        ${borewellId ? '<span class="forecast-label">Borewell Location</span>' : '<span class="forecast-label">Selected Location</span>'}
+                    </div>
+                    <div class="forecast-content">
+                        ${forecastData.forecast.map(day => `
+                            <div class="forecast-day">
+                                <div class="forecast-date">
+                                    ${new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                </div>
+                                <div class="forecast-temp">
+                                    <span class="temp-high">${day.temperature.max}°</span>
+                                    <span class="temp-low">${day.temperature.min}°</span>
+                                </div>
+                                <div class="forecast-desc">${day.description}</div>
+                                <div class="forecast-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-tint"></i>
+                                        <span>${day.humidity}%</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-wind"></i>
+                                        <span>${day.windSpeed} km/h</span>
+                                    </div>
+                                    ${day.precipitation > 0 ? `
+                                        <div class="detail-item">
+                                            <i class="fas fa-cloud-rain"></i>
+                                            <span>${day.precipitation} mm</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+        }
+
+        // Show water level prediction
+        function showWaterLevelPrediction(prediction) {
+            const modal = document.createElement('div');
+            modal.className = 'modal prediction-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-water"></i> Water Level Prediction</h2>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="prediction-content">
+                        <div class="prediction-main">
+                            <div class="prediction-value">
+                                <span class="value">${prediction.waterLevel}</span>
+                                <span class="unit">${prediction.unit}</span>
+                            </div>
+                            <div class="confidence-meter">
+                                <div class="confidence-label">Confidence: ${Math.round(prediction.confidence * 100)}%</div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: ${prediction.confidence * 100}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="prediction-factors">
+                            <h4>Factors Considered:</h4>
+                            <div class="factors-grid">
+                                <div class="factor-item">
+                                    <i class="fas fa-thermometer-half"></i>
+                                    <span class="factor-label">Temperature</span>
+                                    <span class="factor-value">${prediction.factors.temperature}°C</span>
+                                </div>
+                                <div class="factor-item">
+                                    <i class="fas fa-cloud-rain"></i>
+                                    <span class="factor-label">Precipitation</span>
+                                    <span class="factor-value">${prediction.factors.precipitation} mm</span>
+                                </div>
+                                <div class="factor-item">
+                                    <i class="fas fa-tint"></i>
+                                    <span class="factor-label">Humidity</span>
+                                    <span class="factor-value">${prediction.factors.humidity}%</span>
+                                </div>
+                                <div class="factor-item">
+                                    <i class="fas fa-weight"></i>
+                                    <span class="factor-label">Pressure</span>
+                                    <span class="factor-value">${prediction.factors.pressure} hPa</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="prediction-note">
+                            <p><strong>Note:</strong> This prediction is based on current weather conditions using ${prediction.method === 'ml_model' ? 'machine learning models' : 'statistical analysis'}. Actual water levels may vary based on local geological conditions, seasonal patterns, and other factors.</p>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+        }
+
+        // Enhanced add borewells to map with weather loading
         function addBorewellsToMap() {
             borewells.forEach(borewell => {
                 const isYourWell = borewell.customer._id === currentUserId;
@@ -328,13 +549,22 @@
                 // Enhanced popup content
                 const popupContent = createBorewellPopup(borewell, isYourWell);
                 marker.bindPopup(popupContent, {
-                    maxWidth: 300,
+                    maxWidth: 350,
                     className: 'custom-popup'
+                });
+
+                // Load weather when popup opens
+                marker.on('popupopen', function() {
+                    setTimeout(() => {
+                        loadBorewellWeather(borewell._id, borewell.location.latitude, borewell.location.longitude);
+                    }, 100);
                 });
 
                 // Add hover effects
                 marker.on('mouseover', function() {
-                    this.openPopup();
+                    if (!marker.isPopupOpen()) {
+                        this.openPopup();
+                    }
                 });
             });
         }
@@ -360,10 +590,11 @@
             });
         }
 
-        // Create enhanced popup content
+        // Create enhanced popup content with weather data
         function createBorewellPopup(borewell, isYourWell) {
+            const popupId = `popup-${borewell._id}`;
             return `
-                <div class="borewell-popup">
+                <div class="borewell-popup" id="${popupId}">
                     <div class="popup-header">
                         <h4><i class="fas fa-tint"></i> ${borewell.wellType.replace('-', ' ').toUpperCase()}</h4>
                         <span class="status-badge ${borewell.status}">${borewell.status.toUpperCase()}</span>
@@ -396,6 +627,22 @@
                             </div>
                         </div>
                         
+                        <!-- Weather Section -->
+                        <div class="popup-section">
+                            <div class="popup-weather-header">
+                                <h5><i class="fas fa-cloud-sun"></i> Local Weather</h5>
+                                <button class="btn btn-small btn-refresh" onclick="loadBorewellWeather('${borewell._id}', ${borewell.location.latitude}, ${borewell.location.longitude})">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            <div id="weather-${borewell._id}" class="popup-weather">
+                                <div class="weather-loading-small">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    Loading weather...
+                                </div>
+                            </div>
+                        </div>
+                        
                         ${borewell.description ? `
                             <div class="popup-section">
                                 <div class="popup-item">
@@ -421,8 +668,17 @@
                                 <button class="btn btn-small btn-secondary" onclick="viewBorewellDetails('${borewell._id}')">
                                     <i class="fas fa-eye"></i> Details
                                 </button>
+                                <button class="btn btn-small btn-info" onclick="getForecast(${borewell.location.latitude}, ${borewell.location.longitude}, '${borewell._id}')">
+                                    <i class="fas fa-calendar-alt"></i> Forecast
+                                </button>
                             </div>
-                        ` : ''}
+                        ` : `
+                            <div class="popup-actions">
+                                <button class="btn btn-small btn-info" onclick="getForecast(${borewell.location.latitude}, ${borewell.location.longitude}, '${borewell._id}')">
+                                    <i class="fas fa-calendar-alt"></i> View Forecast
+                                </button>
+                            </div>
+                        `}
                     </div>
                 </div>
             `;
@@ -675,36 +931,53 @@
             );
         }
 
-        // Load weather data
-        async function loadWeather(lat, lng) {
-            const weatherWidget = document.getElementById('weatherWidget');
-            weatherWidget.innerHTML = '<div class="weather-loading"><i class="fas fa-spinner fa-spin"></i> Loading weather...</div>';
+        // Load weather data with enhanced information
+        async function loadWeather(lat, lng, targetElement = null) {
+            const weatherContainer = targetElement || document.getElementById('weatherWidget');
+            weatherContainer.innerHTML = '<div class="weather-loading"><i class="fas fa-spinner fa-spin"></i> Loading weather...</div>';
 
             try {
-                const response = await fetch(`/api/weather/${lat}/${lng}`);
-                const data = await response.json();
+                const response = await fetch(`/api/weather/current?lat=${lat}&lng=${lng}`);
+                const result = await response.json();
                 
-                weatherWidget.innerHTML = `
-                    <div class="weather-info">
-                        <div class="weather-main">
-                            <span class="temp">${data.temperature}°C</span>
-                            <span class="desc">${data.description}</span>
-                        </div>
-                        <div class="weather-details">
+                if (!result.success) {
+                    throw new Error(result.message);
+                }
+                
+                const data = result.data;
+                
+                weatherContainer.innerHTML = `
+                    <div class="weather-compact">
+                        <div class="weather-items">
                             <div class="weather-item">
-                                <i class="fas fa-tint"></i>
-                                <span>${data.humidity}%</span>
+                                <i class="fas fa-thermometer-half"></i>
+                                <span class="value">${data.temperature}°C</span>
                             </div>
                             <div class="weather-item">
                                 <i class="fas fa-wind"></i>
-                                <span>${data.windSpeed} km/h</span>
+                                <span class="value">${data.windSpeed} km/h</span>
+                            </div>
+                            <div class="weather-item">
+                                <i class="fas fa-tint"></i>
+                                <span class="value">${data.humidity}%</span>
                             </div>
                         </div>
                     </div>
                 `;
+                
+                // Store weather data for later use
+                if (!targetElement) {
+                    window.currentWeatherData = data;
+                }
+                
             } catch (error) {
                 console.error('Weather error:', error);
-                weatherWidget.innerHTML = '<div class="weather-error">Weather unavailable</div>';
+                weatherContainer.innerHTML = `
+                    <div class="weather-error-compact">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Weather unavailable</span>
+                    </div>
+                `;
             }
         }
 

@@ -29,82 +29,201 @@ router.get('/current', [
     const { lat, lng } = req.query;
     const apiKey = process.env.WEATHER_API_KEY;
 
-    if (!apiKey) {
-      return res.status(500).json({
-        success: false,
-        message: 'Weather API key not configured'
+    // If no API key or placeholder key, use enhanced location-based mock data
+    if (!apiKey || apiKey === 'your-openweathermap-api-key' || apiKey === '78f70e3de05c9c5e7d5f9bc4d1b0e5b4' || apiKey === 'GET_YOUR_FREE_API_KEY_FROM_OPENWEATHERMAP_ORG') {
+      
+      // Enhanced location-based weather simulation
+      const latNum = parseFloat(lat);
+      const lngNum = parseFloat(lng);
+      
+      // Determine region-specific weather patterns
+      let baseTemp, humidity, pressure, weatherTypes, cityName, country;
+      
+      // India/South Asia region
+      if (latNum >= 6 && latNum <= 37 && lngNum >= 68 && lngNum <= 97) {
+        baseTemp = 28; // Warmer climate
+        humidity = 65;
+        pressure = 1010;
+        weatherTypes = ['clear sky', 'few clouds', 'haze', 'partly cloudy'];
+        country = 'IN';
+        
+        // Approximate city names based on coordinates
+        if (latNum >= 28 && latNum <= 29 && lngNum >= 77 && lngNum <= 78) {
+          cityName = 'Delhi';
+        } else if (latNum >= 19 && latNum <= 20 && lngNum >= 72 && lngNum <= 73) {
+          cityName = 'Mumbai';
+        } else if (latNum >= 12 && latNum <= 13 && lngNum >= 77 && lngNum <= 78) {
+          cityName = 'Bangalore';
+        } else if (latNum >= 13 && latNum <= 14 && lngNum >= 80 && lngNum <= 81) {
+          cityName = 'Chennai';
+        } else {
+          cityName = 'Regional Location';
+        }
+      } 
+      // Europe
+      else if (latNum >= 35 && latNum <= 70 && lngNum >= -10 && lngNum <= 40) {
+        baseTemp = 15;
+        humidity = 70;
+        pressure = 1015;
+        weatherTypes = ['overcast clouds', 'light rain', 'clear sky', 'few clouds'];
+        country = 'EU';
+        cityName = 'European Location';
+      }
+      // North America
+      else if (latNum >= 25 && latNum <= 70 && lngNum >= -130 && lngNum <= -70) {
+        baseTemp = 20;
+        humidity = 60;
+        pressure = 1013;
+        weatherTypes = ['clear sky', 'scattered clouds', 'partly cloudy'];
+        country = 'US';
+        cityName = 'US Location';
+      }
+      // Default (global)
+      else {
+        baseTemp = 22;
+        humidity = 65;
+        pressure = 1013;
+        weatherTypes = ['clear sky', 'few clouds', 'partly cloudy'];
+        country = '--';
+        cityName = 'Unknown Location';
+      }
+      
+      // Time-based temperature variation
+      const hour = new Date().getHours();
+      let tempVariation = 0;
+      if (hour >= 6 && hour < 12) tempVariation = -2; // Morning cooler
+      else if (hour >= 12 && hour < 16) tempVariation = 5; // Afternoon hotter
+      else if (hour >= 16 && hour < 20) tempVariation = 2; // Evening warm
+      else tempVariation = -5; // Night cooler
+      
+      const mockWeatherData = {
+        name: cityName,
+        sys: { country: country },
+        coord: { lat: latNum, lon: lngNum },
+        main: {
+          temp: baseTemp + tempVariation + (Math.random() * 6 - 3), // ±3°C variation
+          feels_like: baseTemp + tempVariation + (Math.random() * 4 - 2),
+          humidity: humidity + (Math.random() * 20 - 10), // ±10% variation
+          pressure: pressure + (Math.random() * 20 - 10)
+        },
+        weather: [{
+          description: weatherTypes[Math.floor(Math.random() * weatherTypes.length)],
+          icon: ['01d', '02d', '03d', '04d', '01n', '02n'][Math.floor(Math.random() * 6)]
+        }],
+        wind: {
+          speed: 2 + Math.random() * 8,
+          deg: Math.random() * 360
+        },
+        clouds: {
+          all: Math.random() * 80
+        },
+        visibility: 8000 + Math.random() * 2000
+      };
+
+      const result = {
+        city: mockWeatherData.name,
+        country: mockWeatherData.sys.country,
+        temperature: Math.round(mockWeatherData.main.temp),
+        feelsLike: Math.round(mockWeatherData.main.feels_like),
+        humidity: Math.round(mockWeatherData.main.humidity),
+        pressure: Math.round(mockWeatherData.main.pressure),
+        description: mockWeatherData.weather[0].description,
+        icon: mockWeatherData.weather[0].icon,
+        windSpeed: Math.round(mockWeatherData.wind.speed * 100) / 100,
+        windDirection: Math.round(mockWeatherData.wind.deg),
+        cloudiness: Math.round(mockWeatherData.clouds.all),
+        visibility: Math.round(mockWeatherData.visibility),
+        coordinates: {
+          lat: mockWeatherData.coord.lat,
+          lng: mockWeatherData.coord.lon
+        },
+        timestamp: new Date().toISOString(),
+        demo: true // Flag to indicate this is demo data
+      };
+
+      return res.json({
+        success: true,
+        data: result
       });
     }
 
-    // Call OpenWeatherMap API
-    const weatherResponse = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
-    );
+    // Call OpenWeatherMap API with real key
+    try {
+      const weatherResponse = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
+      );
 
-    const weatherData = weatherResponse.data;
+      const weatherData = weatherResponse.data;
 
-    // Extract relevant weather information
-    const result = {
-      city: weatherData.name || 'Unknown',
-      country: weatherData.sys.country || '',
-      temperature: Math.round(weatherData.main.temp),
-      feelsLike: Math.round(weatherData.main.feels_like),
-      humidity: weatherData.main.humidity,
-      pressure: weatherData.main.pressure,
-      description: weatherData.weather[0].description,
-      icon: weatherData.weather[0].icon,
-      windSpeed: weatherData.wind?.speed || 0,
-      windDirection: weatherData.wind?.deg || 0,
-      cloudiness: weatherData.clouds?.all || 0,
-      visibility: weatherData.visibility || 0,
-      coordinates: {
-        lat: weatherData.coord.lat,
-        lng: weatherData.coord.lon
-      },
-      timestamp: new Date().toISOString()
-    };
-
-    // Add precipitation data if available
-    if (weatherData.rain) {
-      result.precipitation = {
-        rain_1h: weatherData.rain['1h'] || 0,
-        rain_3h: weatherData.rain['3h'] || 0
+      // Extract relevant weather information
+      const result = {
+        city: weatherData.name || 'Unknown',
+        country: weatherData.sys.country || '',
+        temperature: Math.round(weatherData.main.temp),
+        feelsLike: Math.round(weatherData.main.feels_like),
+        humidity: weatherData.main.humidity,
+        pressure: weatherData.main.pressure,
+        description: weatherData.weather[0].description,
+        icon: weatherData.weather[0].icon,
+        windSpeed: weatherData.wind?.speed || 0,
+        windDirection: weatherData.wind?.deg || 0,
+        cloudiness: weatherData.clouds?.all || 0,
+        visibility: weatherData.visibility || 0,
+        coordinates: {
+          lat: weatherData.coord.lat,
+          lng: weatherData.coord.lon
+        },
+        timestamp: new Date().toISOString()
       };
+
+      // Add precipitation data if available
+      if (weatherData.rain) {
+        result.precipitation = {
+          rain_1h: weatherData.rain['1h'] || 0,
+          rain_3h: weatherData.rain['3h'] || 0
+        };
+      }
+
+      if (weatherData.snow) {
+        result.precipitation = {
+          ...result.precipitation,
+          snow_1h: weatherData.snow['1h'] || 0,
+          snow_3h: weatherData.snow['3h'] || 0
+        };
+      }
+
+      res.json({
+        success: true,
+        data: result
+      });
+
+      } catch (error) {
+      console.error('Weather API error:', error);
+      
+      if (error.response?.status === 401) {
+        return res.status(500).json({
+          success: false,
+          message: 'Invalid weather API key'
+        });
+      }
+      
+      if (error.response?.status === 404) {
+        return res.status(404).json({
+          success: false,
+          message: 'Location not found'
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch weather data'
+      });
     }
-
-    if (weatherData.snow) {
-      result.precipitation = {
-        ...result.precipitation,
-        snow_1h: weatherData.snow['1h'] || 0,
-        snow_3h: weatherData.snow['3h'] || 0
-      };
-    }
-
-    res.json({
-      success: true,
-      data: result
-    });
-
   } catch (error) {
-    console.error('Weather API error:', error);
-    
-    if (error.response?.status === 401) {
-      return res.status(500).json({
-        success: false,
-        message: 'Invalid weather API key'
-      });
-    }
-    
-    if (error.response?.status === 404) {
-      return res.status(404).json({
-        success: false,
-        message: 'Location not found'
-      });
-    }
-
+    console.error('Weather route error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch weather data'
+      message: 'Internal server error'
     });
   }
 });
@@ -138,10 +257,43 @@ router.get('/forecast', [
     const { lat, lng, days = 5 } = req.query;
     const apiKey = process.env.WEATHER_API_KEY;
 
-    if (!apiKey) {
-      return res.status(500).json({
-        success: false,
-        message: 'Weather API key not configured'
+    // If no API key or invalid key, use mock data
+    if (!apiKey || apiKey === 'your-openweathermap-api-key' || apiKey === '78f70e3de05c9c5e7d5f9bc4d1b0e5b4') {
+      // Generate mock 5-day forecast
+      const mockForecast = [];
+      for (let i = 0; i < parseInt(days); i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        
+        const minTemp = 20 + Math.random() * 8;
+        const maxTemp = minTemp + 5 + Math.random() * 10;
+        
+        mockForecast.push({
+          date: date.toISOString().split('T')[0],
+          temperature: {
+            min: Math.round(minTemp),
+            max: Math.round(maxTemp),
+            avg: Math.round((minTemp + maxTemp) / 2)
+          },
+          humidity: Math.round(50 + Math.random() * 40),
+          pressure: Math.round(1010 + Math.random() * 20),
+          precipitation: Math.round(Math.random() * 5 * 100) / 100,
+          windSpeed: Math.round((2 + Math.random() * 8) * 100) / 100,
+          description: ['clear sky', 'few clouds', 'scattered clouds', 'partly cloudy', 'light rain'][Math.floor(Math.random() * 5)]
+        });
+      }
+
+      return res.json({
+        success: true,
+        city: 'Demo Location',
+        country: 'IN',
+        coordinates: {
+          lat: parseFloat(lat),
+          lng: parseFloat(lng)
+        },
+        forecast: mockForecast,
+        timestamp: new Date().toISOString(),
+        demo: true
       });
     }
 

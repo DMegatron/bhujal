@@ -4,117 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
-    <link rel="stylesheet" href="/css/main.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+        :root {
+            --primary-blue: #2563eb;
+            --secondary-blue: #1e40af;
+            --accent-cyan: #06b6d4;
+            --surface-white: #ffffff;
+            --surface-gray: #f8fafc;
+            --surface-light: #f1f5f9;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
         }
-        
-        .auth-main {
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafbfc;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #dbeafe 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #f0f9ff 0%, transparent 50%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem 1rem;
+            padding: 1.5rem;
             position: relative;
         }
-        
-        .auth-main::before {
+
+        /* Subtle background elements */
+        .background-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 650px;
+            background: var(--surface-white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .login-form-section {
+            padding: 3.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--surface-white);
+        }
+
+        .login-brand-section {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3.5rem;
+            overflow: hidden;
+        }
+
+        .login-brand-section::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            opacity: 0.6;
         }
-        
-        .auth-container {
+
+        .brand-content {
             position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 480px;
-        }
-        
-        .auth-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 3rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .auth-header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            color: white;
         }
-        
-        .auth-header .brand {
+
+        .brand-logo {
+            width: 72px;
+            height: 72px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
+            margin: 0 auto 1.5rem;
+            font-size: 1.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.025em;
+        }
+
+        .brand-subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .login-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .login-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
             margin-bottom: 1.5rem;
         }
-        
-        .auth-header .brand i {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--primary-blue), var(--accent-teal));
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .auth-header .brand span {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-blue), var(--accent-teal));
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .auth-header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--neutral-800);
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
             margin-bottom: 0.5rem;
         }
-        
-        .auth-header p {
-            color: var(--neutral-600);
-            font-size: 1.1rem;
-        }
-        
-        .auth-form .form-group {
-            margin-bottom: 2rem;
-        }
-        
-        .auth-form .form-input {
-            padding: 1.25rem 1.5rem;
-            font-size: 1.1rem;
-            border-radius: 12px;
-        }
-        
-        .auth-form .btn {
-            width: 100%;
-            padding: 1.25rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .auth-divider {
-            text-align: center;
-            margin: 2rem 0;
+
+        .input-wrapper {
             position: relative;
-            color: var(--neutral-400);
         }
-        
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            padding-left: 2.75rem;
+            border: 1.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            background: var(--surface-white);
+            transition: all 0.2s ease;
+            outline: none;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .form-input:focus + .input-icon {
+            color: var(--primary-blue);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1.5rem;
+            font-family: inherit;
+        }
+
+        .login-button:hover:not(:disabled) {
+            background: var(--secondary-blue);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-divider {
+            position: relative;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
         .auth-divider::before {
             content: '';
             position: absolute;
@@ -122,53 +260,203 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: var(--neutral-200);
+            background: var(--border-light);
         }
-        
+
         .auth-divider span {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--surface-white);
             padding: 0 1rem;
         }
-        
-        .auth-footer {
-            text-align: center;
-            color: var(--neutral-600);
-        }
-        
-        .auth-footer a {
-            color: var(--primary-blue);
+
+        .register-link {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1.5px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
             text-decoration: none;
-            font-weight: 600;
+            display: inline-block;
+            text-align: center;
+            font-family: inherit;
         }
-        
-        .auth-footer a:hover {
-            color: var(--primary-blue-dark);
+
+        .register-link:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.03);
         }
-        
-        .back-to-home {
+
+        .back-link {
             position: absolute;
-            top: 2rem;
-            left: 2rem;
-            color: white;
+            top: 1.5rem;
+            left: 1.5rem;
+            color: var(--text-muted);
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-weight: 600;
-            z-index: 10;
-            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            z-index: 20;
         }
-        
-        .back-to-home:hover {
-            color: var(--primary-blue-light);
-            transform: translateX(-4px);
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .alert {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .alert-success {
+            background: #10b981;
+        }
+
+        .alert-error {
+            background: #ef4444;
+        }
+
+        .demo-helper {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: var(--surface-light);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .demo-helper-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .demo-credentials {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        .form-input.error {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+            
+            .login-brand-section {
+                display: none;
+            }
+            
+            .login-form-section {
+                padding: 2rem;
+            }
+            
+            .back-link {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        /* Focus states for accessibility */
+        .form-input:focus,
+        .login-button:focus,
+        .register-link:focus,
+        .back-link:focus {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 2px;
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .form-input {
+                border-width: 2px;
+            }
+            
+            .login-button {
+                border: 2px solid transparent;
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
-    <a href="/" class="back-to-home">
+    <div class="background-grid"></div>
+
+    <a href="/" class="back-link">
         <i class="fas fa-arrow-left"></i>
-        Back to Home
+        <span>Back to Home</span>
     </a>
 
     <!-- Flash Messages -->
@@ -181,47 +469,46 @@
 
     <% if (error_msg && error_msg.length > 0) { %>
         <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fas fa-exclamation-triangle"></i>
             <%= error_msg %>
         </div>
     <% } %>
 
     <% if (error && error.length > 0) { %>
         <div class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fas fa-exclamation-triangle"></i>
             <%= error %>
         </div>
     <% } %>
 
-    <!-- Main Content -->
-    <main class="auth-main">
-        <div class="auth-container">
-            <div class="auth-card">
-                <div class="auth-header">
-                    <div class="brand">
-                        <i class="fas fa-tint"></i>
-                        <span>Bhujal</span>
-                    </div>
-                    <h1>Welcome Back</h1>
-                    <p>Sign in to continue managing your groundwater resources</p>
-                </div>
+    <div class="login-container">
+        <div class="login-form-section">
+            <div class="login-header">
+                <h1 class="login-title">Sign in to Bhujal</h1>
+                <p class="login-subtitle">Access your groundwater management dashboard</p>
+            </div>
 
-                <form action="/login" method="POST" class="auth-form">
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
+            <form action="/login" method="POST" id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email address</label>
+                    <div class="input-wrapper">
                         <input 
                             type="email" 
                             id="email" 
                             name="email" 
                             required 
                             class="form-input"
-                            placeholder="Enter your email address"
+                            placeholder="Enter your email"
                             autocomplete="email"
+                            value="<%= typeof email !== 'undefined' ? email : '' %>"
                         >
+                        <i class="fas fa-envelope input-icon"></i>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="password">Password</label>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-wrapper">
                         <input 
                             type="password" 
                             id="password" 
@@ -231,74 +518,131 @@
                             placeholder="Enter your password"
                             autocomplete="current-password"
                         >
+                        <i class="fas fa-lock input-icon"></i>
                     </div>
+                </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Sign In
-                    </button>
+                <button type="submit" class="login-button" id="submitBtn">
+                    <span class="btn-text">Sign in</span>
+                </button>
 
-                    <div class="auth-divider">
-                        <span>New to Bhujal?</span>
-                    </div>
+                <div class="auth-divider">
+                    <span>Don't have an account?</span>
+                </div>
 
-                    <a href="/register" class="btn btn-secondary">
-                        <i class="fas fa-user-plus"></i>
-                        Create Account
-                    </a>
-                </form>
+                <a href="/register" class="register-link">
+                    Create an account
+                </a>
+            </form>
 
-                <div class="auth-footer">
-                    <p>
-                        Forgot your password? 
-                        <a href="/forgot-password">Reset it here</a>
-                    </p>
+            <div class="demo-helper">
+                <div class="demo-helper-title">Demo Access</div>
+                <div class="demo-credentials">
+                    test@gmail.com<br>
+                    password123
                 </div>
             </div>
         </div>
-    </main>
 
-    <script src="/js/main.js"></script>
-</body>
-</html>
-
-                    <button type="submit" class="btn btn-primary btn-full">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Sign In
-                    </button>
-                </form>
-
-                <div class="auth-footer">
-                    <p>Don't have an account? <a href="/register">Sign up here</a></p>
+        <div class="login-brand-section">
+            <div class="brand-content">
+                <div class="brand-logo">
+                    <i class="fas fa-tint"></i>
                 </div>
-            </div>
-
-            <div class="auth-side">
-                <div class="auth-side-content">
-                    <h2>Groundwater Management Made Simple</h2>
-                    <ul class="feature-list">
-                        <li>
-                            <i class="fas fa-map-marked-alt"></i>
-                            Interactive borewell mapping
-                        </li>
-                        <li>
-                            <i class="fas fa-chart-line"></i>
-                            Real-time monitoring
-                        </li>
-                        <li>
-                            <i class="fas fa-cloud-sun"></i>
-                            Weather integration
-                        </li>
-                        <li>
-                            <i class="fas fa-users"></i>
-                            Community collaboration
-                        </li>
-                    </ul>
-                </div>
+                <h2 class="brand-title">Welcome to Bhujal</h2>
+                <p class="brand-subtitle">Intelligent groundwater monitoring and management platform for sustainable water resource optimization.</p>
             </div>
         </div>
-    </main>
+    </div>
 
-    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Auto-hide alerts
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.animation = 'slideIn 0.3s ease reverse';
+                    setTimeout(() => alert.remove(), 300);
+                }, 4000);
+            });
+
+            // Form validation
+            function validateForm() {
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+
+                if (!email || !password) return false;
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+
+            // Input validation feedback
+            [emailInput, passwordInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.classList.remove('error');
+                    }
+                });
+
+                input.addEventListener('blur', function() {
+                    if (!this.value.trim()) {
+                        this.classList.add('error');
+                    }
+                });
+            });
+
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    
+                    if (!emailInput.value.trim()) {
+                        emailInput.classList.add('error');
+                        emailInput.focus();
+                    } else if (!passwordInput.value.trim()) {
+                        passwordInput.classList.add('error');
+                        passwordInput.focus();
+                    }
+                    return;
+                }
+
+                // Loading state
+                const btnText = submitBtn.querySelector('.btn-text');
+                btnText.innerHTML = '<div class="loading-spinner"></div> Signing in...';
+                submitBtn.disabled = true;
+            });
+
+            // Auto-focus
+            setTimeout(() => {
+                if (!emailInput.value.trim()) {
+                    emailInput.focus();
+                } else if (!passwordInput.value.trim()) {
+                    passwordInput.focus();
+                }
+            }, 100);
+
+            // Demo credentials helper
+            if (window.location.hostname === 'localhost') {
+                emailInput.addEventListener('dblclick', function() {
+                    this.value = 'test@gmail.com';
+                    passwordInput.value = 'password123';
+                    
+                    // Visual feedback
+                    [this, passwordInput].forEach(input => {
+                        input.style.background = 'rgba(37, 99, 235, 0.05)';
+                        setTimeout(() => {
+                            input.style.background = '';
+                        }, 1000);
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
