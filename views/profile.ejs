@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-tint"></i>
+                Bhujal
+            </a>
+            <div class="nav-menu">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/map" class="nav-link">Map</a>
+                <a href="/profile" class="nav-link active">Profile</a>
+                <a href="/reports" class="nav-link">Reports</a>
+                <form action="/logout" method="POST" class="nav-logout">
+                    <button type="submit" class="btn btn-logout">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if (success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <%= success_msg %>
+        </div>
+    <% } %>
+
+    <% if (error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <%= error_msg %>
+        </div>
+    <% } %>
+
+    <!-- Main Content -->
+    <main class="profile-main">
+        <div class="container">
+            <div class="profile-container">
+                <!-- Profile Header -->
+                <section class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h1><%= user.name %></h1>
+                        <p><%= user.email %></p>
+                        <span class="profile-badge">Active Member</span>
+                    </div>
+                </section>
+
+                <!-- Profile Form -->
+                <section class="profile-form-section">
+                    <div class="section-header">
+                        <h2>Profile Information</h2>
+                        <p>Update your account details and personal information</p>
+                    </div>
+
+                    <form action="/profile?_method=PUT" method="POST" class="profile-form">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                value="<%= user.name %>"
+                                required 
+                                class="form-input"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                value="<%= user.email %>"
+                                disabled 
+                                class="form-input disabled"
+                            >
+                            <small class="form-help">Email cannot be changed</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number</label>
+                            <input 
+                                type="tel" 
+                                id="phoneNumber" 
+                                name="phoneNumber" 
+                                value="<%= user.phoneNumber %>"
+                                required 
+                                class="form-input"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <textarea 
+                                id="address" 
+                                name="address" 
+                                required 
+                                class="form-input"
+                                rows="4"
+                            ><%= user.address %></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Account Settings -->
+                <section class="account-settings">
+                    <div class="section-header">
+                        <h2>Account Settings</h2>
+                        <p>Manage your account preferences and security</p>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <div class="setting-icon">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="setting-content">
+                                <h3>Change Password</h3>
+                                <p>Update your password to keep your account secure</p>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-key"></i>
+                                    Change Password
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="setting-content">
+                                <h3>Notifications</h3>
+                                <p>Manage how you receive notifications</p>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-cog"></i>
+                                    Configure
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="setting-content">
+                                <h3>Export Data</h3>
+                                <p>Download all your borewell data</p>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <div class="setting-icon">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                            <div class="setting-content">
+                                <h3>Delete Account</h3>
+                                <p>Permanently remove your account and data</p>
+                                <button class="btn btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                    Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Account Statistics -->
+                <section class="account-stats">
+                    <div class="section-header">
+                        <h2>Account Statistics</h2>
+                        <p>Overview of your activity and contributions</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Member Since</h3>
+                                <p>January 2024</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Borewells Registered</h3>
+                                <p>5 wells</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Profile Views</h3>
+                                <p>23 views</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-share"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Data Shared</h3>
+                                <p>Public data</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

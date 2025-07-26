@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-tint"></i>
+                Bhujal
+            </a>
+            <div class="nav-menu">
+                <a href="/dashboard" class="nav-link active">Dashboard</a>
+                <a href="/map" class="nav-link">Map</a>
+                <a href="/profile" class="nav-link">Profile</a>
+                <a href="/reports" class="nav-link">Reports</a>
+                <form action="/logout" method="POST" class="nav-logout">
+                    <button type="submit" class="btn btn-logout">Logout</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if (success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <%= success_msg %>
+        </div>
+    <% } %>
+
+    <% if (error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <%= error_msg %>
+        </div>
+    <% } %>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="container">
+            <!-- Welcome Section -->
+            <section class="dashboard-header">
+                <h1>Welcome back, <%= user.name %>!</h1>
+                <p>Here's an overview of your groundwater management activities</p>
+            </section>
+
+            <!-- Stats Cards -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3><%= stats.total %></h3>
+                            <p>Total Borewells</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon active">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3><%= stats.active %></h3>
+                            <p>Active Wells</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon inactive">
+                            <i class="fas fa-pause-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3><%= stats.inactive %></h3>
+                            <p>Inactive Wells</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>85%</h3>
+                            <p>Efficiency Rate</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Well Status Distribution</h3>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Monthly Activity</h3>
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Borewells -->
+            <section class="borewells-section">
+                <div class="section-header">
+                    <h2>Your Borewells</h2>
+                    <a href="/map" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add New Borewell
+                    </a>
+                </div>
+
+                <% if (borewells.length > 0) { %>
+                    <div class="borewells-grid">
+                        <% borewells.forEach((borewell, index) => { %>
+                            <div class="borewell-card">
+                                <div class="borewell-header">
+                                    <span class="borewell-type">
+                                        <i class="fas fa-tint"></i>
+                                        <%= (borewell.wellType || 'borewell').replace('-', ' ').toUpperCase() %>
+                                    </span>
+                                    <span class="borewell-status <%= borewell.status || 'active' %>">
+                                        <%= (borewell.status || 'active').toUpperCase() %>
+                                    </span>
+                                </div>
+                                <div class="borewell-details">
+                                    <div class="detail-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>Lat: <%= (borewell.location?.latitude || 0).toFixed(4) %>, Lng: <%= (borewell.location?.longitude || 0).toFixed(4) %></span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <i class="fas fa-ruler-vertical"></i>
+                                        <span>Depth: <%= borewell.exactDepth || 0 %>m (<%= borewell.depthType || 'Unknown' %>)</span>
+                                    </div>
+                                    <% if (borewell.motorOperated) { %>
+                                        <div class="detail-item">
+                                            <i class="fas fa-cog"></i>
+                                            <span>Motor Operated</span>
+                                        </div>
+                                    <% } %>
+                                    <% if (borewell.authoritiesAware) { %>
+                                        <div class="detail-item">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>Authorities Aware</span>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="borewell-footer">
+                                    <small>Registered on <%= new Date(borewell.createdAt).toLocaleDateString() %></small>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-tint"></i>
+                        <h3>No Borewells Registered</h3>
+                        <p>Start by registering your first borewell on the map</p>
+                        <a href="/map" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Register First Borewell
+                        </a>
+                    </div>
+                <% } %>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="actions-section">
+                <h2>Quick Actions</h2>
+                <div class="actions-grid">
+                    <a href="/map" class="action-card">
+                        <i class="fas fa-map"></i>
+                        <h3>View Map</h3>
+                        <p>Explore all borewells on interactive map</p>
+                    </a>
+                    <a href="/profile" class="action-card">
+                        <i class="fas fa-user"></i>
+                        <h3>Update Profile</h3>
+                        <p>Manage your account information</p>
+                    </a>
+                    <a href="/reports" class="action-card">
+                        <i class="fas fa-download"></i>
+                        <h3>Export Data</h3>
+                        <p>Download your borewell data</p>
+                    </a>
+                    <a href="/reports" class="action-card">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>View Reports</h3>
+                        <p>Generate detailed reports</p>
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Chart data
+        const statsData = {
+            total: <%= stats.total || 0 %>,
+            active: <%= stats.active || 0 %>,
+            inactive: <%= stats.inactive || 0 %>
+        };
+
+        // Monthly activity data from server
+        const monthlyActivity = <%- monthlyActivity || '{"labels":["Jan","Feb","Mar","Apr","May","Jun"],"data":[0,0,0,0,0,0]}' %>;
+
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Inactive'],
+                datasets: [{
+                    data: [statsData.active, statsData.inactive],
+                    backgroundColor: ['#10b981', '#f59e0b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Activity Chart with real data
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        new Chart(activityCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyActivity.labels,
+                datasets: [{
+                    label: 'Borewells Registered',
+                    data: monthlyActivity.data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#3b82f6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                return Number.isInteger(value) ? value : '';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label + ' 2025';
+                            },
+                            label: function(context) {
+                                return 'Registered: ' + context.raw + (context.raw === 1 ? ' borewell' : ' borewells');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

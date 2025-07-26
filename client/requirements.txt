@@ -1,0 +1,62 @@
+# Bhujal React Frontend Requirements
+# Frontend Dependencies for the React-based client application
+
+# Core React Framework
+react@^19.1.0
+react-dom@^19.1.0
+react-scripts@5.0.1
+typescript@^4.9.5
+
+# Routing
+react-router-dom@^7.7.1
+
+# UI Components & Styling
+@headlessui/react@^2.2.6
+@heroicons/react@^2.2.0
+
+# HTTP Client
+axios@^1.11.0
+
+# Map Integration
+leaflet@^1.9.4
+react-leaflet@^5.0.0
+@types/leaflet@^1.9.20
+
+# Utilities
+date-fns@^4.1.0
+react-hot-toast@^2.5.2
+web-vitals@^2.1.4
+
+# Testing Libraries
+@testing-library/dom@^10.4.0
+@testing-library/jest-dom@^6.6.3
+@testing-library/react@^16.3.0
+@testing-library/user-event@^13.5.0
+@types/jest@^27.5.2
+
+# TypeScript Types
+@types/node@^16.18.126
+@types/react@^19.1.8
+@types/react-dom@^19.1.6
+
+# Installation Instructions:
+# 1. Make sure you have Node.js (v16 or higher) installed
+# 2. Navigate to the client directory: cd client
+# 3. Run: npm install
+# 4. For development: npm start
+# 5. For production build: npm run build
+
+# Runtime Requirements:
+# - Node.js v16.x or higher
+# - NPM v8.x or higher
+# - Modern web browser with ES6+ support
+
+# Development Scripts:
+# - npm start: Start development server (http://localhost:3000)
+# - npm run build: Create production build
+# - npm test: Run test suite
+# - npm run eject: Eject from Create React App (irreversible)
+
+# Environment Variables Required:
+# - REACT_APP_API_URL (Backend API URL, e.g., http://localhost:5000)
+# - REACT_APP_MAPBOX_TOKEN (optional, for enhanced maps)

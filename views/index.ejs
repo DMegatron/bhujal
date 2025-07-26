@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <i class="fas fa-tint"></i>
+                Bhujal
+            </a>
+            <div class="nav-menu">
+                <% if (user) { %>
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                    <a href="/map" class="nav-link">Map</a>
+                    <a href="/profile" class="nav-link">Profile</a>
+                    <form action="/logout" method="POST" class="nav-logout">
+                        <button type="submit" class="btn btn-logout">Logout</button>
+                    </form>
+                <% } else { %>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-link">Register</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if (success_msg && success_msg.length > 0) { %>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <%= success_msg %>
+        </div>
+    <% } %>
+
+    <% if (error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <%= error_msg %>
+        </div>
+    <% } %>
+
+    <% if (error && error.length > 0) { %>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <%= error %>
+        </div>
+    <% } %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-background">
+                <video autoplay muted loop>
+                    <source src="/images/banner-animation.mp4" type="video/mp4">
+                    <img src="/images/banner-animation.gif" alt="Water animation">
+                </video>
+            </div>
+            <div class="hero-content">
+                <h1 class="hero-title">Groundwater Management System</h1>
+                <p class="hero-subtitle">
+                    Monitor, manage, and optimize groundwater resources with our comprehensive borewell management platform
+                </p>
+                <div class="hero-actions">
+                    <% if (user) { %>
+                        <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                        <a href="/map" class="btn btn-secondary">View Map</a>
+                    <% } else { %>
+                        <a href="/register" class="btn btn-primary">Get Started</a>
+                        <a href="/login" class="btn btn-secondary">Login</a>
+                    <% } %>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="container">
+                <h2 class="section-title">Why Choose Bhujal?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h3>Interactive Mapping</h3>
+                        <p>Visualize borewell locations with our advanced mapping system and GPS integration</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Data Analytics</h3>
+                        <p>Track water levels, usage patterns, and optimize groundwater management</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud-sun"></i>
+                        </div>
+                        <h3>Weather Integration</h3>
+                        <p>Real-time weather data to help predict water availability and usage</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Mobile Friendly</h3>
+                        <p>Access your data anywhere with our responsive design and mobile optimization</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2>About Bhujal</h2>
+                        <p>
+                            Bhujal is a comprehensive groundwater management system designed to help communities, 
+                            farmers, and water management authorities monitor and optimize groundwater resources.
+                        </p>
+                        <p>
+                            Our platform provides real-time monitoring, data analytics, and collaborative tools 
+                            to ensure sustainable water usage and conservation.
+                        </p>
+                        <div class="stats">
+                            <div class="stat">
+                                <span class="stat-number">500+</span>
+                                <span class="stat-label">Registered Wells</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">50+</span>
+                                <span class="stat-label">Communities</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">24/7</span>
+                                <span class="stat-label">Monitoring</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-image">
+                        <img src="/images/about1/about1_india.jpg" alt="India groundwater">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Ready to Start Managing Your Groundwater?</h2>
+                    <p>Join thousands of users who trust Bhujal for their water management needs</p>
+                    <% if (!user) { %>
+                        <a href="/register" class="btn btn-primary btn-large">Get Started Today</a>
+                    <% } %>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Bhujal</h3>
+                    <p>Sustainable groundwater management for a better tomorrow</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/about">About</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="/help">Help Center</a></li>
+                        <li><a href="/faq">FAQ</a></li>
+                        <li><a href="/privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Bhujal. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
