@@ -1,0 +1,24 @@
+{
+  "name": "Bhujal ML Services",
+  "version": "1.0.0",
+  "apps": [
+    {
+      "name": "bhujal-express",
+      "script": "simple-app.js",
+      "watch": false,
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": "5000"
+      }
+    },
+    {
+      "name": "bhujal-ml-service",
+      "script": "predict_service.py",
+      "interpreter": "python",
+      "watch": false,
+      "env": {
+        "FLASK_ENV": "production"
+      }
+    }
+  ]
+}

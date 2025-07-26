@@ -87,6 +87,10 @@
                         <i class="fas fa-plus"></i>
                         Add Borewell
                     </button>
+                    <button id="predictBtn" class="btn btn-success" title="Predict groundwater levels">
+                        <i class="fas fa-chart-line"></i>
+                        Predict Levels
+                    </button>
                     <button id="locateBtn" class="btn btn-secondary" title="Find my location">
                         <i class="fas fa-crosshairs"></i>
                         Find Me
@@ -95,6 +99,10 @@
                         <i class="fas fa-times"></i>
                         Cancel
                     </button>
+                    <button id="cancelPredictBtn" class="btn btn-danger" style="display: none;" title="Cancel prediction mode">
+                        <i class="fas fa-times"></i>
+                        Cancel Prediction
+                    </button>
                 </div>
                 
                 <!-- Map Mode Indicator -->
@@ -102,6 +110,14 @@
                     <div class="mode-content">
                         <i class="fas fa-map-pin"></i>
                         <span>Click on the map to place your borewell</span>
+                    </div>
+                </div>
+                
+                <!-- Prediction Mode Indicator -->
+                <div id="predictionModeIndicator" class="map-mode-indicator" style="display: none;">
+                    <div class="mode-content">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Click on the map to select location for prediction</span>
                     </div>
                 </div>
                 
@@ -258,6 +274,121 @@
                 </div>
             </div>
 
+            <!-- Groundwater Prediction Modal -->
+            <div id="predictionModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-chart-line"></i> Groundwater Level Prediction</h2>
+                        <button id="closePredictionModal" class="modal-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="prediction-form-container">
+                        <form id="predictionForm" class="prediction-form">
+                            <!-- Location Selection -->
+                            <div class="form-section">
+                                <h3><i class="fas fa-map-marker-alt"></i> Location</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="predictionLatitude">Latitude</label>
+                                        <input type="number" id="predictionLatitude" step="any" required class="form-input" readonly placeholder="Selected from map">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="predictionLongitude">Longitude</label>
+                                        <input type="number" id="predictionLongitude" step="any" required class="form-input" readonly placeholder="Selected from map">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prediction Parameters -->
+                            <div class="form-section">
+                                <h3><i class="fas fa-calendar-alt"></i> Prediction Parameters</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="predictionYear">Target Year</label>
+                                        <input type="number" id="predictionYear" required class="form-input" min="2024" max="2074" value="2025">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="previousLevel">Previous Water Level (m)</label>
+                                        <input type="number" id="previousLevel" step="0.1" class="form-input" placeholder="Optional">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="expectedRainfall">Expected Rainfall (mm)</label>
+                                        <input type="number" id="expectedRainfall" step="0.1" class="form-input" placeholder="Optional">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="expectedTemperature">Expected Temperature (°C)</label>
+                                        <input type="number" id="expectedTemperature" step="0.1" class="form-input" placeholder="Optional">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" id="cancelPredictionBtn" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i>
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-chart-line"></i>
+                                    Predict Water Level
+                                </button>
+                                <button type="button" id="testPredictionBtn" class="btn btn-warning" style="margin-left: 10px;">
+                                    <i class="fas fa-bug"></i>
+                                    Test Prediction
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Prediction Results -->
+                        <div id="predictionResults" class="prediction-results" style="display: none;">
+                            <div class="results-header">
+                                <h3><i class="fas fa-chart-bar"></i> Prediction Results</h3>
+                            </div>
+                            <div class="results-content">
+                                <div class="prediction-card">
+                                    <div class="prediction-value">
+                                        <span id="predictedLevel" class="value">--</span>
+                                        <span class="unit">meters</span>
+                                    </div>
+                                    <div class="prediction-interpretation">
+                                        <span id="predictionInterpretation">--</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="prediction-details">
+                                    <div class="detail-row">
+                                        <span class="label">Location:</span>
+                                        <span id="resultLocation">--</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="label">Target Year:</span>
+                                        <span id="resultYear">--</span>
+                                    </div>
+                                    <div class="detail-row" id="confidenceRow" style="display: none;">
+                                        <span class="label">Confidence:</span>
+                                        <span id="resultConfidence">--</span>
+                                    </div>
+                                </div>
+
+                                <div class="prediction-actions">
+                                    <button type="button" id="newPredictionBtn" class="btn btn-primary">
+                                        <i class="fas fa-redo"></i>
+                                        New Prediction
+                                    </button>
+                                    <button type="button" id="savePredictionBtn" class="btn btn-success">
+                                        <i class="fas fa-save"></i>
+                                        Save Result
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Legend -->
             <div class="map-legend">
                 <h4>Legend</h4>
@@ -289,7 +420,9 @@
         let currentUserId = '';
         let selectedLocation = null;
         let tempMarker = null;
+        let predictionMarker = null;
         let isAddingBorewell = false;
+        let isPredictingLocation = false;
         let searchMarkers = [];
         let searchDebounceTimer = null;
 
@@ -367,6 +500,19 @@
 
             // Custom marker styles
             createCustomStyles();
+            
+            // Add unified map click handler
+            map.on('click', handleMapClick);
+        }
+
+        // Unified map click handler
+        function handleMapClick(e) {
+            console.log('Map clicked:', e.latlng, 'isAddingBorewell:', isAddingBorewell, 'isPredictingLocation:', isPredictingLocation);
+            if (isAddingBorewell) {
+                onMapClick(e);
+            } else if (isPredictingLocation) {
+                onMapClickForPrediction(e);
+            }
         }
 
         // Load borewell data
@@ -668,8 +814,18 @@
             // Add borewell button
             document.getElementById('addBorewellBtn').addEventListener('click', enterAddMode);
             
+            // Predict button
+            console.log('Adding event listener to predictBtn');
+            document.getElementById('predictBtn').addEventListener('click', function() {
+                console.log('Predict button clicked!');
+                enterPredictionMode();
+            });
+            
             // Cancel add button
             document.getElementById('cancelAddBtn').addEventListener('click', exitAddMode);
+            
+            // Cancel prediction button
+            document.getElementById('cancelPredictBtn').addEventListener('click', exitPredictionMode);
             
             // Find me button
             document.getElementById('locateBtn').addEventListener('click', locateUser);
@@ -1112,9 +1268,6 @@
             // Change cursor
             map.getContainer().style.cursor = 'crosshair';
             
-            // Add map click listener
-            map.on('click', onMapClick);
-            
             // Show instruction notification
             showNotification('Click on the map to select a location for your borewell', 'info');
         }
@@ -1130,9 +1283,6 @@
             
             // Reset cursor
             map.getContainer().style.cursor = '';
-            
-            // Remove map click listener
-            map.off('click', onMapClick);
             
             // Clean up
             removeTempMarker();
@@ -1163,6 +1313,110 @@
             
             // Load weather for location
             loadWeather(lat, lng);
+        }
+
+        // Enter prediction mode
+        function enterPredictionMode() {
+            console.log('Entering prediction mode');
+            isPredictingLocation = true;
+            
+            // Update UI
+            document.getElementById('predictBtn').style.display = 'none';
+            document.getElementById('cancelPredictBtn').style.display = 'inline-flex';
+            document.getElementById('predictionModeIndicator').style.display = 'block';
+            
+            // Change cursor
+            map.getContainer().style.cursor = 'crosshair';
+            
+            // Show instruction notification
+            showNotification('Click on the map to select a location for groundwater prediction', 'info');
+        }
+
+        // Exit prediction mode
+        function exitPredictionMode() {
+            isPredictingLocation = false;
+            
+            // Update UI
+            document.getElementById('predictBtn').style.display = 'inline-flex';
+            document.getElementById('cancelPredictBtn').style.display = 'none';
+            document.getElementById('predictionModeIndicator').style.display = 'none';
+            
+            // Reset cursor
+            map.getContainer().style.cursor = '';
+            
+            // Clean up
+            clearPredictionMarker();
+        }
+
+        // Handle map click for predictions
+        function onMapClickForPrediction(e) {
+            console.log('onMapClickForPrediction called:', e.latlng, 'isPredictingLocation:', isPredictingLocation);
+            if (!isPredictingLocation) return;
+            
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            console.log('Setting prediction location:', lat, lng);
+            
+            // Exit prediction mode
+            exitPredictionMode();
+            
+            // Open prediction modal
+            console.log('Opening prediction modal');
+            document.getElementById('predictionModal').style.display = 'flex';
+            
+            // Reset form first, then set location (to preserve lat/lng values)
+            resetPredictionForm();
+            setPredictionLocation(lat, lng);
+            
+            // Re-attach form event listener to be sure
+            const modalForm = document.getElementById('predictionForm');
+            const modalSubmitBtn = modalForm.querySelector('button[type="submit"]');
+            const testBtn = document.getElementById('testPredictionBtn');
+            console.log('Modal form found:', modalForm);
+            console.log('Modal submit button found:', modalSubmitBtn);
+            
+            // Add test button listener
+            if (testBtn) {
+                testBtn.addEventListener('click', function() {
+                    console.log('Test button clicked - making direct API call');
+                    testDirectPrediction(lat, lng);
+                });
+            }
+            
+            // Add direct click listener to submit button to bypass form issues
+            if (modalSubmitBtn) {
+                modalSubmitBtn.addEventListener('click', function(e) {
+                    console.log('Submit button clicked directly!');
+                    e.preventDefault(); // Prevent default form submission
+                    
+                    // Get form values and make direct API call
+                    const formLat = document.getElementById('predictionLatitude').value;
+                    const formLng = document.getElementById('predictionLongitude').value;
+                    const formYear = document.getElementById('predictionYear').value;
+                    const formPreviousLevel = document.getElementById('previousLevel').value;
+                    const formRainfall = document.getElementById('expectedRainfall').value;
+                    const formTemperature = document.getElementById('expectedTemperature').value;
+                    
+                    console.log('Form values:', {
+                        lat: formLat, lng: formLng, year: formYear,
+                        previousLevel: formPreviousLevel, rainfall: formRainfall, temperature: formTemperature
+                    });
+                    
+                    makeFormPrediction(formLat, formLng, formYear, formPreviousLevel, formRainfall, formTemperature);
+                });
+            }
+            
+            // Debug: Check if modal is visible and form has values
+            setTimeout(() => {
+                const modal = document.getElementById('predictionModal');
+                const latInput = document.getElementById('predictionLatitude');
+                const lngInput = document.getElementById('predictionLongitude');
+                console.log('Modal display style:', modal.style.display);
+                console.log('Latitude input value:', latInput.value);
+                console.log('Longitude input value:', lngInput.value);
+                console.log('Modal visible:', modal.offsetHeight > 0);
+            }, 100);
         }
 
         // Add temporary marker for selected location
@@ -1690,6 +1944,302 @@
         function viewBorewellDetails(id) {
             showNotification('Details view coming soon!', 'info');
         }
+
+        // Prediction functionality
+        let isSelectingPredictionLocation = false;
+
+        // Initialize prediction functionality
+        function initializePredictionSystem() {
+            const predictionModal = document.getElementById('predictionModal');
+            const closePredictionModal = document.getElementById('closePredictionModal');
+            const cancelPredictionBtn = document.getElementById('cancelPredictionBtn');
+            const predictionForm = document.getElementById('predictionForm');
+            const newPredictionBtn = document.getElementById('newPredictionBtn');
+
+            // Close prediction modal
+            closePredictionModal.addEventListener('click', closePredictionModal_Click);
+            cancelPredictionBtn.addEventListener('click', closePredictionModal_Click);
+
+            function closePredictionModal_Click() {
+                predictionModal.style.display = 'none';
+                clearPredictionMarker();
+                resetPredictionForm();
+            }
+
+            // Submit prediction form
+            console.log('Setting up prediction form event listener');
+            console.log('predictionForm found:', predictionForm);
+            
+            if (predictionForm) {
+                predictionForm.addEventListener('submit', handlePredictionSubmit);
+                
+                // Debug: Add click listener to submit button
+                const submitButton = predictionForm.querySelector('button[type="submit"]');
+                console.log('Submit button found:', submitButton);
+                if (submitButton) {
+                    console.log('Adding click listener to submit button');
+                    submitButton.addEventListener('click', function(e) {
+                        console.log('Submit button clicked!', e);
+                    });
+                } else {
+                    console.log('Submit button not found!');
+                }
+            } else {
+                console.log('predictionForm not found!');
+            }
+
+            // New prediction button
+            newPredictionBtn.addEventListener('click', () => {
+                document.getElementById('predictionResults').style.display = 'none';
+                document.getElementById('predictionForm').style.display = 'block';
+                resetPredictionForm();
+            });
+        }
+
+        function setPredictionLocation(lat, lng) {
+            console.log('setPredictionLocation called with:', lat, lng);
+            document.getElementById('predictionLatitude').value = lat.toFixed(6);
+            document.getElementById('predictionLongitude').value = lng.toFixed(6);
+
+            // Add marker to map
+            clearPredictionMarker();
+            predictionMarker = L.marker([lat, lng], {
+                icon: L.divIcon({
+                    className: 'prediction-marker',
+                    html: '<i class="fas fa-chart-line" style="color: #22c55e; font-size: 16px;"></i>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(map);
+
+            showNotification('Location selected for prediction', 'success');
+        }
+
+        function clearPredictionMarker() {
+            if (predictionMarker) {
+                map.removeLayer(predictionMarker);
+                predictionMarker = null;
+            }
+        }
+
+        // Test function to make direct prediction API call
+        async function testDirectPrediction(lat, lng) {
+            console.log('Testing direct prediction for:', lat, lng);
+            
+            const testData = {
+                latitude: lat,
+                longitude: lng,
+                year: 2025
+            };
+            
+            try {
+                console.log('Sending test prediction request:', testData);
+                
+                const response = await fetch('/api/predict/predict-groundwater', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                console.log('Test response status:', response.status);
+                const result = await response.json();
+                console.log('Test response data:', result);
+                
+                if (result.success) {
+                    console.log('TEST SUCCESS - Prediction:', result.data.prediction);
+                    alert(`Test Prediction Success!\nLocation: ${lat}, ${lng}\nPrediction: ${result.data.prediction}m\nInterpretation: ${result.data.interpretation}`);
+                } else {
+                    console.log('TEST FAILED:', result.message);
+                    alert(`Test Failed: ${result.message}`);
+                }
+                
+            } catch (error) {
+                console.error('Test prediction error:', error);
+                alert(`Test Error: ${error.message}`);
+            }
+        }
+
+        // Form prediction function that displays results properly
+        async function makeFormPrediction(lat, lng, year, previousLevel, rainfall, temperature) {
+            console.log('Making form prediction with full data');
+            
+            // Prepare form data
+            const formData = {
+                latitude: parseFloat(lat),
+                longitude: parseFloat(lng),
+                year: parseInt(year)
+            };
+            
+            // Add optional fields if provided
+            if (previousLevel) formData.previous_level = parseFloat(previousLevel);
+            if (rainfall) formData.rainfall = parseFloat(rainfall);
+            if (temperature) formData.temperature = parseFloat(temperature);
+            
+            // Show loading state
+            const submitBtn = document.querySelector('#predictionForm button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
+            submitBtn.disabled = true;
+            
+            try {
+                console.log('Submitting prediction request:', formData);
+
+                const response = await fetch('/api/predict/predict-groundwater', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    console.log('Prediction successful - coordinates:', formData.latitude, formData.longitude, 'prediction:', result.data.prediction);
+                    displayPredictionResults(result.data, formData);
+                    showNotification('Prediction completed successfully!', 'success');
+                } else {
+                    throw new Error(result.message || 'Prediction failed');
+                }
+
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showNotification(error.message || 'Failed to get prediction. Please try again.', 'error');
+            } finally {
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function resetPredictionForm() {
+            // Store lat/lng values before reset
+            const latValue = document.getElementById('predictionLatitude').value;
+            const lngValue = document.getElementById('predictionLongitude').value;
+            
+            // Reset the form
+            document.getElementById('predictionForm').reset();
+            
+            // Restore lat/lng values
+            document.getElementById('predictionLatitude').value = latValue;
+            document.getElementById('predictionLongitude').value = lngValue;
+            
+            // Set default year
+            document.getElementById('predictionYear').value = new Date().getFullYear() + 1;
+            
+            // Show/hide sections
+            document.getElementById('predictionResults').style.display = 'none';
+            document.getElementById('predictionForm').style.display = 'block';
+        }
+
+        async function handlePredictionSubmit(e) {
+            console.log('Form submitted - handlePredictionSubmit called');
+            e.preventDefault();
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Show loading state
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Predicting...';
+                submitBtn.disabled = true;
+
+                // Get form data
+                const formData = {
+                    latitude: parseFloat(document.getElementById('predictionLatitude').value),
+                    longitude: parseFloat(document.getElementById('predictionLongitude').value),
+                    year: parseInt(document.getElementById('predictionYear').value),
+                };
+
+                // Add optional parameters
+                const previousLevel = document.getElementById('previousLevel').value;
+                if (previousLevel) formData.previous_level = parseFloat(previousLevel);
+
+                const rainfall = document.getElementById('expectedRainfall').value;
+                if (rainfall) formData.rainfall = parseFloat(rainfall);
+
+                const temperature = document.getElementById('expectedTemperature').value;
+                if (temperature) formData.temperature = parseFloat(temperature);
+
+                console.log('Submitting prediction request:', formData);
+
+                // Make API call
+                const response = await fetch('/api/predict/predict-groundwater', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    console.log('Prediction successful - coordinates:', formData.latitude, formData.longitude, 'prediction:', result.data.prediction);
+                    displayPredictionResults(result.data, formData);
+                    showNotification('Prediction completed successfully!', 'success');
+                } else {
+                    throw new Error(result.message || 'Prediction failed');
+                }
+
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showNotification(error.message || 'Failed to get prediction. Please try again.', 'error');
+            } finally {
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function displayPredictionResults(predictionData, inputData) {
+            // Hide form and show results
+            document.getElementById('predictionForm').style.display = 'none';
+            document.getElementById('predictionResults').style.display = 'block';
+
+            // Update result values
+            document.getElementById('predictedLevel').textContent = predictionData.prediction;
+            document.getElementById('predictionInterpretation').textContent = predictionData.interpretation;
+            document.getElementById('resultLocation').textContent = `${inputData.latitude.toFixed(4)}, ${inputData.longitude.toFixed(4)}`;
+            document.getElementById('resultYear').textContent = inputData.year;
+
+            // Show confidence if available
+            if (predictionData.confidence) {
+                document.getElementById('confidenceRow').style.display = 'block';
+                document.getElementById('resultConfidence').textContent = `${(predictionData.confidence * 100).toFixed(1)}%`;
+            } else {
+                document.getElementById('confidenceRow').style.display = 'none';
+            }
+
+            // Update marker popup
+            if (predictionMarker) {
+                predictionMarker.bindPopup(`
+                    <div class="prediction-popup">
+                        <h4><i class="fas fa-chart-line"></i> Prediction Result</h4>
+                        <p><strong>Predicted Level:</strong> ${predictionData.prediction} meters</p>
+                        <p><strong>Year:</strong> ${inputData.year}</p>
+                        <p><strong>Status:</strong> ${predictionData.interpretation}</p>
+                    </div>
+                `).openPopup();
+            }
+        }
+
+        // Add to initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            loadBorewells();
+            loadWeather();
+            setupEventListeners();
+            setupFormValidation();
+            setupMobileStyles();
+            initializePredictionSystem(); // Add this line
+        });
     </script>
     <script src="/js/main.js"></script>
 </body>

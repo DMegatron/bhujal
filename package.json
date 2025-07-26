@@ -10,6 +10,8 @@
   "scripts": {
     "start": "node simple-app.js",
     "dev": "nodemon simple-app.js",
+    "dev:full": "concurrently \"npm run dev\" \"npm run predict-service\"",
+    "predict-service": "python predict_service.py",
     "install-deps": "npm install",
     "setup": "npm install && node -e \"console.log('✅ Dependencies installed! Create .env file and run: npm run dev')\"",
     "check": "node -e \"console.log('Node.js:', process.version); console.log('NPM:', require('child_process').execSync('npm -v').toString().trim());\""
@@ -28,6 +30,7 @@
     "mongoose": "^7.5.0"
   },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "nodemon": "^3.0.1"
   },
   "keywords": [
