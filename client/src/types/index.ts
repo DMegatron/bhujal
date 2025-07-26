@@ -118,3 +118,30 @@ export interface BorewellFormData {
   description?: string;
   isPublic?: boolean;
 }
+
+export interface PredictionRequest {
+  latitude: number;
+  longitude: number;
+}
+
+export interface PredictionResult {
+  currentWaterLevel: number;
+  futureWaterLevel: number;
+  isSuitableForBorewell: boolean;
+  confidence: number;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+  recommendations: string[];
+  monthlyPredictions?: Array<{
+    month: string;
+    predictedLevel: number;
+  }>;
+}
+
+export interface PredictionResponse {
+  success: boolean;
+  data?: PredictionResult;
+  message?: string;
+}

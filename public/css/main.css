@@ -4529,3 +4529,294 @@ body {
 .demo-notice a:hover {
     text-decoration: underline;
 }
+
+/* Groundwater Prediction Modal Styles */
+.groundwater-prediction-modal .modal-content {
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.prediction-mode.map-mode-indicator {
+    background: linear-gradient(135deg, #10b981, #14b8a6);
+}
+
+.prediction-mode .mode-content {
+    color: white;
+}
+
+.temp-marker.prediction-marker .temp-marker-content {
+    color: #10b981;
+}
+
+.temp-marker.prediction-marker .marker-pulse-temp.prediction {
+    background: rgba(16, 185, 129, 0.3);
+    animation: pulse-prediction 2s infinite;
+}
+
+@keyframes pulse-prediction {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.prediction-content {
+    padding: 0;
+}
+
+.location-info {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.location-info h4 {
+    margin-bottom: 0.5rem;
+    color: #334155;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.location-info p {
+    color: #64748b;
+    font-size: 0.85rem;
+    font-family: monospace;
+}
+
+.prediction-results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.prediction-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.prediction-card.current {
+    border-color: #0ea5e9;
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+}
+
+.prediction-card.future {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.card-header i {
+    font-size: 1rem;
+}
+
+.prediction-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.prediction-value.good .value {
+    color: #059669;
+}
+
+.prediction-value.moderate .value {
+    color: #d97706;
+}
+
+.prediction-value.poor .value {
+    color: #dc2626;
+}
+
+.prediction-value .unit {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 400;
+    margin-left: 0.25rem;
+}
+
+.suitability-section {
+    margin-bottom: 1.5rem;
+}
+
+.suitability-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid;
+}
+
+.suitability-card.suitable {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border-color: #22c55e;
+    color: #166534;
+}
+
+.suitability-card.not-suitable {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+.suitability-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.suitability-text h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.suitability-text p {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.monthly-predictions {
+    margin-bottom: 1.5rem;
+}
+
+.monthly-predictions h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: #334155;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.predictions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.75rem;
+}
+
+.month-prediction {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.month-prediction .month {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.month-prediction .level {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.month-prediction .level.good {
+    color: #059669;
+}
+
+.month-prediction .level.moderate {
+    color: #d97706;
+}
+
+.month-prediction .level.poor {
+    color: #dc2626;
+}
+
+.recommendations {
+    margin-bottom: 1.5rem;
+}
+
+.recommendations h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: #334155;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.recommendations-list {
+    list-style: none;
+    padding: 0;
+}
+
+.recommendations-list li {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding-left: 2.5rem;
+    color: #92400e;
+    font-size: 0.9rem;
+}
+
+.recommendations-list li::before {
+    content: "💡";
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+}
+
+.prediction-note {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+}
+
+.prediction-note p {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Responsive adjustments for prediction modal */
+@media (max-width: 768px) {
+    .groundwater-prediction-modal .modal-content {
+        max-width: 95vw;
+        margin: 1rem;
+    }
+    
+    .prediction-results {
+        grid-template-columns: 1fr;
+    }
+    
+    .predictions-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .prediction-value {
+        font-size: 1.5rem;
+    }
+}

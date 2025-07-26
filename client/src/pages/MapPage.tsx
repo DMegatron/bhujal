@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import { borewellService } from '../services/borewellService';
-import { Borewell, BorewellFormData } from '../types';
+import { predictionService } from '../services/predictionService';
+import { Borewell, BorewellFormData, PredictionResult } from '../types';
+import PredictionResults from '../components/PredictionResults';
 import toast from 'react-hot-toast';
 
 // Fix for default markers in react-leaflet
@@ -21,6 +23,9 @@ const MapPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [predictionMode, setPredictionMode] = useState(false);
+  const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null);
+  const [predicting, setPredicting] = useState(false);
 
   useEffect(() => {
     getUserLocation();
@@ -59,8 +64,12 @@ const MapPage: React.FC = () => {
   const MapClickHandler = () => {
     useMapEvents({
       click: (e) => {
-        setSelectedLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
-        setShowForm(true);
+        if (predictionMode) {
+          handlePrediction(e.latlng.lat, e.latlng.lng);
+        } else {
+          setSelectedLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
+          setShowForm(true);
+        }
       },
     });
     return null;
@@ -82,6 +91,37 @@ const MapPage: React.FC = () => {
     }
   };
 
+  const handlePrediction = async (lat: number, lng: number) => {
+    if (predicting) return;
+    
+    setPredicting(true);
+    try {
+      const response = await predictionService.predictGroundwaterLevel({
+        latitude: lat,
+        longitude: lng
+      });
+      
+      if (response.success && response.data) {
+        setPredictionResult(response.data);
+        setPredictionMode(false);
+      } else {
+        toast.error(response.message || 'Failed to get prediction');
+      }
+    } catch (error) {
+      console.error('Prediction error:', error);
+      toast.error('Failed to predict groundwater level');
+    } finally {
+      setPredicting(false);
+    }
+  };
+
+  const togglePredictionMode = () => {
+    setPredictionMode(!predictionMode);
+    setShowForm(false);
+    setSelectedLocation(null);
+    setPredictionResult(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -97,7 +137,11 @@ const MapPage: React.FC = () => {
         <MapContainer
           center={userLocation}
           zoom={13}
-          style={{ height: '100%', width: '100%' }}
+          style={{ 
+            height: '100%', 
+            width: '100%',
+            cursor: predictionMode ? 'crosshair' : 'default'
+          }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -147,12 +191,33 @@ const MapPage: React.FC = () => {
           <p className="text-sm text-gray-600 mb-2">
             • View existing borewells on the map
           </p>
-          <p className="text-sm text-gray-600 mb-2">
-            • Click anywhere to register a new borewell
-          </p>
-          <p className="text-sm text-gray-600">
+          {!predictionMode ? (
+            <p className="text-sm text-gray-600 mb-2">
+              • Click anywhere to register a new borewell
+            </p>
+          ) : (
+            <p className="text-sm text-blue-600 mb-2 font-medium">
+              • Click anywhere to predict groundwater level
+            </p>
+          )}
+          <p className="text-sm text-gray-600 mb-3">
             • Click on markers to see details
           </p>
+          
+          {/* Prediction Mode Toggle */}
+          <div className="flex space-x-2">
+            <button
+              onClick={togglePredictionMode}
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                predictionMode 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
+              disabled={predicting}
+            >
+              {predicting ? 'Predicting...' : predictionMode ? 'Exit Prediction' : 'Predict Water Level'}
+            </button>
+          </div>
         </div>
       </div>
       
@@ -167,6 +232,16 @@ const MapPage: React.FC = () => {
               setShowForm(false);
               setSelectedLocation(null);
             }}
+          />
+        </div>
+      )}
+      
+      {/* Prediction Results Modal */}
+      {predictionResult && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <PredictionResults
+            prediction={predictionResult}
+            onClose={() => setPredictionResult(null)}
           />
         </div>
       )}
