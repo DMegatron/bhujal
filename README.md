@@ -53,43 +53,88 @@ Bhujal-NEW/
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB
-- npm or yarn
+### Quick Installation (Recommended)
 
-### Installation
+**Option 1: One-Command Setup**
+```bash
+npm run setup
+```
+
+**Option 2: Automated Script**
+```bash
+# Windows
+./setup.bat
+
+# macOS/Linux
+chmod +x setup.sh && ./setup.sh
+```
+
+### Prerequisites
+- Node.js (v16 or higher)
+- MongoDB (local or MongoDB Atlas)
+- npm (v8 or higher)
+
+### Manual Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/DMegatron/bhujal.git
    cd Bhujal-NEW
    ```
 
-2. **Install dependencies**
+2. **Install all dependencies**
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
-   
-   Create `.env` file in the server directory:
-   ```env
-   MONGODB_URI=mongodb://localhost:27017/bhujal
-   JWT_SECRET=your_jwt_secret_key
-   JWT_EXPIRE=30d
-   PORT=5000
-   WEATHER_API_KEY=your_openweather_api_key
-   ```
-
-4. **Start the development servers**
    ```bash
-   npm run dev
+   # Copy environment template
+   cp .env.example .env
+   
+   # Edit .env with your configuration
+   # Required: MONGODB_URI, SESSION_SECRET
+   # Optional: WEATHER_API_KEY, PORT
    ```
 
-   This will start:
-   - Backend server on http://localhost:5000
-   - Frontend development server on http://localhost:3000
+4. **Start the application**
+   ```bash
+   # Development mode (recommended)
+   npm run dev
+   
+   # Production mode
+   npm start
+   ```
+
+5. **Access the application**
+   - Open http://localhost:3000 in your browser
+   - Register a new account or login
+
+### Environment Configuration
+
+Create a `.env` file in the root directory:
+```env
+# Database
+MONGODB_URI=mongodb://localhost:27017/bhujal
+
+# Security
+SESSION_SECRET=your-super-secret-session-key
+
+# Optional
+PORT=3000
+NODE_ENV=development
+WEATHER_API_KEY=your-openweather-api-key
+```
+
+### Available Scripts
+
+```bash
+npm start         # Start production server
+npm run dev       # Start development server with auto-reload
+npm run setup     # Install dependencies and setup guide
+npm run check     # Check Node.js and NPM versions
+npm install       # Install all dependencies
+```
 
 ## 📱 Usage
 
