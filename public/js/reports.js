@@ -7,7 +7,7 @@ function initializeReportsCharts(reportData) {
     }
 
     // Well Type Distribution Chart
-    initializeWellTypeChart(reportData.wellTypeDistribution);
+    initializeWellTypeChart(reportData.wellTypes);
     
     // Depth Categories Chart
     initializeDepthChart(reportData.depthAnalysis);
@@ -16,15 +16,31 @@ function initializeReportsCharts(reportData) {
     initializeOperationChart(reportData.operations);
     
     // Monthly Registration Trend Chart
-    initializeTrendChart(reportData.monthlyTrend);
+    initializeTrendChart(reportData.monthlyData);
 }
 
 function initializeWellTypeChart(wellTypeData) {
     const ctx = document.getElementById('wellTypeChart');
     if (!ctx) return;
 
-    const labels = Object.keys(wellTypeData || {});
-    const data = Object.values(wellTypeData || {});
+    // Filter out zero values and prepare data
+    const filteredData = {};
+    Object.keys(wellTypeData || {}).forEach(key => {
+        if (wellTypeData[key] > 0) {
+            filteredData[key] = wellTypeData[key];
+        }
+    });
+
+    const labels = Object.keys(filteredData);
+    const data = Object.values(filteredData);
+    
+    // Show message if no data
+    if (labels.length === 0) {
+        const container = ctx.parentElement;
+        container.innerHTML = '<div class="no-data-message"><i class="fas fa-chart-pie"></i><p>No well type data available</p></div>';
+        return;
+    }
+
     const backgroundColors = [
         '#3498db',
         '#2ecc71',
@@ -74,24 +90,40 @@ function initializeDepthChart(depthAnalysis) {
     const ctx = document.getElementById('depthChart');
     if (!ctx) return;
 
-    // Create depth categories based on analysis
-    const categories = ['0-50m', '51-100m', '101-200m', '200m+'];
+    // Use actual depth categories from the data
+    const categories = depthAnalysis.categories || { shallow: 0, medium: 0, deep: 0 };
+    const labels = ['Shallow (0-50m)', 'Medium (51-150m)', 'Deep (150m+)'];
     const data = [
-        Math.floor(Math.random() * 10) + 1, // Placeholder - would need actual category counts
-        Math.floor(Math.random() * 8) + 1,
-        Math.floor(Math.random() * 5) + 1,
-        Math.floor(Math.random() * 3) + 1
+        categories.shallow || 0,
+        categories.medium || 0,
+        categories.deep || 0
     ];
+
+    // Check if all data is zero
+    const hasData = data.some(value => value > 0);
+    if (!hasData) {
+        const container = ctx.parentElement;
+        container.innerHTML = '<div class="no-data-message"><i class="fas fa-chart-bar"></i><p>No depth data available</p></div>';
+        return;
+    }
 
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: categories,
+            labels: labels,
             datasets: [{
                 label: 'Number of Wells',
                 data: data,
-                backgroundColor: 'rgba(52, 152, 219, 0.8)',
-                borderColor: 'rgba(52, 152, 219, 1)',
+                backgroundColor: [
+                    'rgba(46, 204, 113, 0.8)',
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(155, 89, 182, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(46, 204, 113, 1)',
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(155, 89, 182, 1)'
+                ],
                 borderWidth: 1
             }]
         },
@@ -132,6 +164,14 @@ function initializeOperationChart(operations) {
         operations.authoritiesAware || 0,
         operations.publicWells || 0
     ];
+
+    // Check if all data is zero
+    const hasData = data.some(value => value > 0);
+    if (!hasData) {
+        const container = ctx.parentElement;
+        container.innerHTML = '<div class="no-data-message"><i class="fas fa-chart-area"></i><p>No operation data available</p></div>';
+        return;
+    }
 
     new Chart(ctx, {
         type: 'polarArea',
@@ -178,12 +218,20 @@ function initializeOperationChart(operations) {
     });
 }
 
-function initializeTrendChart(monthlyTrend) {
+function initializeTrendChart(monthlyData) {
     const ctx = document.getElementById('trendChart');
     if (!ctx) return;
 
-    const labels = monthlyTrend ? monthlyTrend.map(item => item.month) : [];
-    const data = monthlyTrend ? monthlyTrend.map(item => item.count) : [];
+    const labels = monthlyData ? monthlyData.labels : [];
+    const data = monthlyData ? monthlyData.data : [];
+
+    // Check if there's meaningful data
+    const hasData = data.length > 0 && data.some(value => value > 0);
+    if (!hasData) {
+        const container = ctx.parentElement;
+        container.innerHTML = '<div class="no-data-message"><i class="fas fa-chart-line"></i><p>No registration trend data available</p></div>';
+        return;
+    }
 
     new Chart(ctx, {
         type: 'line',

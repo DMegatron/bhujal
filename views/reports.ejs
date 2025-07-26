@@ -51,6 +51,10 @@
                 <h1>Detailed Reports</h1>
                 <p>Comprehensive analysis of your groundwater management data</p>
                 <div class="export-buttons">
+                    <button id="createSampleData" class="btn btn-info" style="margin-right: 1rem;">
+                        <i class="fas fa-database"></i>
+                        Add Sample Data
+                    </button>
                     <a href="/api/reports/export/json" class="btn btn-secondary" download>
                         <i class="fas fa-download"></i>
                         Export JSON
@@ -269,9 +273,43 @@
         // Initialize charts when page loads
         document.addEventListener('DOMContentLoaded', function() {
             const reportData = <%- JSON.stringify(reportData) %>;
+            console.log('Report Data:', reportData); // Debug log
             
             if (window.initializeReportsCharts) {
                 window.initializeReportsCharts(reportData);
+            }
+
+            // Sample data creation handler
+            const createSampleBtn = document.getElementById('createSampleData');
+            if (createSampleBtn) {
+                createSampleBtn.addEventListener('click', async function() {
+                    this.disabled = true;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+                    
+                    try {
+                        const response = await fetch('/api/create-sample-data', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            alert(`Success! Created ${result.count} sample borewells. Refreshing page...`);
+                            location.reload();
+                        } else {
+                            alert('Error creating sample data: ' + result.error);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error creating sample data');
+                    } finally {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-database"></i> Add Sample Data';
+                    }
+                });
             }
         });
     </script>

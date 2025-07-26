@@ -848,6 +848,94 @@ app.get('/api/weather/:lat/:lng', async (req, res) => {
   }
 });
 
+// Development endpoint to create sample data for testing analytics
+app.post('/api/create-sample-data', requireAuth, async (req, res) => {
+  try {
+    // Only allow in development
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ error: 'Not allowed in production' });
+    }
+
+    const userId = req.session.user.id;
+    
+    // Sample borewell data
+    const sampleBorewells = [
+      {
+        customer: userId,
+        location: { latitude: 28.6139, longitude: 77.2090 },
+        wellType: 'drilled-well',
+        depthType: 'medium',
+        exactDepth: 85,
+        status: 'active',
+        motorOperated: true,
+        authoritiesAware: true,
+        isPublic: true,
+        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days ago
+      },
+      {
+        customer: userId,
+        location: { latitude: 28.6200, longitude: 77.2100 },
+        wellType: 'hand-pump',
+        depthType: 'shallow',
+        exactDepth: 35,
+        status: 'active',
+        motorOperated: false,
+        authoritiesAware: false,
+        isPublic: true,
+        createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000) // 15 days ago
+      },
+      {
+        customer: userId,
+        location: { latitude: 28.6300, longitude: 77.2200 },
+        wellType: 'tube-well',
+        depthType: 'deep',
+        exactDepth: 180,
+        status: 'maintenance',
+        motorOperated: true,
+        authoritiesAware: true,
+        isPublic: false,
+        createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000) // 45 days ago
+      },
+      {
+        customer: userId,
+        location: { latitude: 28.6400, longitude: 77.2300 },
+        wellType: 'dug-well',
+        depthType: 'shallow',
+        exactDepth: 25,
+        status: 'inactive',
+        motorOperated: false,
+        authoritiesAware: false,
+        isPublic: false,
+        createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) // 60 days ago
+      },
+      {
+        customer: userId,
+        location: { latitude: 28.6500, longitude: 77.2400 },
+        wellType: 'drilled-well',
+        depthType: 'medium',
+        exactDepth: 120,
+        status: 'active',
+        motorOperated: true,
+        authoritiesAware: true,
+        isPublic: true,
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
+      }
+    ];
+
+    // Insert sample data
+    await Borewell.insertMany(sampleBorewells);
+    
+    res.json({ 
+      success: true, 
+      message: `Created ${sampleBorewells.length} sample borewells`,
+      count: sampleBorewells.length 
+    });
+  } catch (error) {
+    console.error('Error creating sample data:', error);
+    res.status(500).json({ error: 'Failed to create sample data' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
