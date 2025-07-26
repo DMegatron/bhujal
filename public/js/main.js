@@ -111,7 +111,7 @@ function initializeScrollEffects() {
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
-    };
+    }
     
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -235,18 +235,6 @@ function hideAlert(alert) {
             alert.remove();
         }
     }, 400);
-}
-    // Add loading states to form submissions
-    const forms = document.querySelectorAll('form');
-    
-    forms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const submitBtn = form.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                submitBtn.disabled = true;
-                
 }
 
 // Enhanced Form Management

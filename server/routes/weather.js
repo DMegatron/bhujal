@@ -30,7 +30,7 @@ router.get('/current', [
     const apiKey = process.env.WEATHER_API_KEY;
 
     // If no API key or placeholder key, use enhanced location-based mock data
-    if (!apiKey || apiKey === 'your-openweathermap-api-key' || apiKey === '78f70e3de05c9c5e7d5f9bc4d1b0e5b4' || apiKey === 'GET_YOUR_FREE_API_KEY_FROM_OPENWEATHERMAP_ORG') {
+    if (!apiKey || apiKey === '1e4091871f2d35a7bf80221f72668e3a') {
       
       // Enhanced location-based weather simulation
       const latNum = parseFloat(lat);
@@ -200,13 +200,6 @@ router.get('/current', [
       } catch (error) {
       console.error('Weather API error:', error);
       
-      if (error.response?.status === 401) {
-        return res.status(500).json({
-          success: false,
-          message: 'Invalid weather API key'
-        });
-      }
-      
       if (error.response?.status === 404) {
         return res.status(404).json({
           success: false,
@@ -258,7 +251,7 @@ router.get('/forecast', [
     const apiKey = process.env.WEATHER_API_KEY;
 
     // If no API key or invalid key, use mock data
-    if (!apiKey || apiKey === 'your-openweathermap-api-key' || apiKey === '78f70e3de05c9c5e7d5f9bc4d1b0e5b4') {
+    if (!apiKey || apiKey === '1e4091871f2d35a7bf80221f72668e3a') {
       // Generate mock 5-day forecast
       const mockForecast = [];
       for (let i = 0; i < parseInt(days); i++) {
@@ -368,13 +361,6 @@ router.get('/forecast', [
 
   } catch (error) {
     console.error('Weather forecast API error:', error);
-    
-    if (error.response?.status === 401) {
-      return res.status(500).json({
-        success: false,
-        message: 'Invalid weather API key'
-      });
-    }
     
     if (error.response?.status === 404) {
       return res.status(404).json({
