@@ -8,6 +8,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const borewellRoutes = require('./routes/borewell');
 const weatherRoutes = require('./routes/weather');
+const predictionRoutes = require('./routes/prediction');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -44,6 +45,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bhujal', 
 app.use('/api/auth', authRoutes);
 app.use('/api/borewell', borewellRoutes);
 app.use('/api/weather', weatherRoutes);
+app.use('/api/prediction', predictionRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
