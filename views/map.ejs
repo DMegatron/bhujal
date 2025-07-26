@@ -211,6 +211,17 @@
                                 <label for="description">Additional Details</label>
                                 <textarea id="description" name="description" rows="3" class="form-input form-textarea" placeholder="Any additional information about the borewell (optional)"></textarea>
                             </div>
+
+                            <div class="form-group">
+                                <label for="status">Well Status</label>
+                                <select id="status" name="status" required class="form-input form-select">
+                                    <option value="">Select Well Status</option>
+                                    <option value="active" selected>Active (Working)</option>
+                                    <option value="inactive">Inactive (Not in use)</option>
+                                    <option value="maintenance">Under Maintenance</option>
+                                    <option value="dry">Dry (No water)</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Well Features -->
@@ -400,27 +411,24 @@
                 
                 weatherContainer.innerHTML = `
                     <div class="borewell-weather-info">
-                        <div class="weather-compact">
-                            <div class="weather-temp">
-                                <img src="https://openweathermap.org/img/wn/${data.icon}.png" alt="${data.description}">
-                                <span class="temp">${data.temperature}°C</span>
+                        <div class="weather-compact weather-grid">
+                            <div class="weather-item-grid">
+                                <i class="fas fa-thermometer-half"></i>
+                                <span>${data.temperature}°C</span>
                             </div>
-                            <div class="weather-details-compact">
-                                <div class="weather-item-small">
-                                    <i class="fas fa-tint"></i>
-                                    <span>${data.humidity}%</span>
-                                </div>
-                                <div class="weather-item-small">
-                                    <i class="fas fa-wind"></i>
-                                    <span>${data.windSpeed} km/h</span>
-                                </div>
-                                <div class="weather-item-small">
-                                    <i class="fas fa-thermometer-half"></i>
-                                    <span>${data.pressure} hPa</span>
-                                </div>
+                            <div class="weather-item-grid">
+                                <i class="fas fa-tint"></i>
+                                <span>${data.humidity}%</span>
+                            </div>
+                            <div class="weather-item-grid">
+                                <i class="fas fa-wind"></i>
+                                <span>${data.windSpeed} km/h</span>
+                            </div>
+                            <div class="weather-item-grid">
+                                <i class="fas fa-weight"></i>
+                                <span>${data.pressure} hPa</span>
                             </div>
                         </div>
-                        <div class="weather-desc">${data.description}</div>
                     </div>
                 `;
                 
@@ -1337,24 +1345,22 @@
                 const data = result.data;
                 
                 weatherContainer.innerHTML = `
-                    <div class="weather-compact">
-                        <div class="weather-items">
-                            <div class="weather-item">
-                                <i class="fas fa-thermometer-half"></i>
-                                <span class="value">${data.temperature}°C</span>
-                            </div>
-                            <div class="weather-item">
-                                <i class="fas fa-wind"></i>
-                                <span class="value">${data.windSpeed} km/h</span>
-                            </div>
-                            <div class="weather-item">
-                                <i class="fas fa-tint"></i>
-                                <span class="value">${data.humidity}%</span>
-                            </div>
-                            <div class="weather-item">
-                                <i class="fas fa-weight"></i>
-                                <span class="value">${data.pressure} hPa</span>
-                            </div>
+                    <div class="weather-compact weather-grid">
+                        <div class="weather-item-grid">
+                            <i class="fas fa-thermometer-half"></i>
+                            <span>${data.temperature}°C</span>
+                        </div>
+                        <div class="weather-item-grid">
+                            <i class="fas fa-tint"></i>
+                            <span>${data.humidity}%</span>
+                        </div>
+                        <div class="weather-item-grid">
+                            <i class="fas fa-wind"></i>
+                            <span>${data.windSpeed} km/h</span>
+                        </div>
+                        <div class="weather-item-grid">
+                            <i class="fas fa-weight"></i>
+                            <span>${data.pressure} hPa</span>
                         </div>
                     </div>
                 `;
@@ -1540,6 +1546,72 @@
                     animation: pulse 2s infinite;
                 }
                 
+                /* Weather Grid Styling */
+                .weather-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    grid-template-rows: 1fr 1fr;
+                    gap: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                    border-radius: 8px;
+                    border: 1px solid rgba(148, 163, 184, 0.2);
+                }
+                
+                .weather-item-grid {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-direction: column;
+                    padding: 8px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 6px;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
+                    min-height: 50px;
+                }
+                
+                .weather-item-grid:hover {
+                    background: rgba(255, 255, 255, 0.9);
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+                }
+                
+                .weather-item-grid i {
+                    font-size: 16px;
+                    color: #3b82f6;
+                    margin-bottom: 4px;
+                }
+                
+                .weather-item-grid span {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #374151;
+                    text-align: center;
+                    line-height: 1.2;
+                }
+                
+                /* Responsive weather grid */
+                @media (max-width: 768px) {
+                    .weather-grid {
+                        gap: 6px;
+                        padding: 10px;
+                    }
+                    
+                    .weather-item-grid {
+                        padding: 6px;
+                        min-height: 45px;
+                    }
+                    
+                    .weather-item-grid i {
+                        font-size: 14px;
+                    }
+                    
+                    .weather-item-grid span {
+                        font-size: 11px;
+                    }
+                }
+                
                 /* Alert Styling */
                 .alert {
                     display: flex;
@@ -1606,6 +1678,29 @@
                         margin-right: 6px;
                     }
                 }
+                
+                /* Form validation styles */
+                .form-input.error,
+                .form-select.error {
+                    border-color: #ef4444;
+                    background-color: #fef2f2;
+                    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+                }
+                
+                .validation-error {
+                    color: #dc2626;
+                    font-size: 12px;
+                    margin-top: 4px;
+                    display: flex;
+                    align-items: center;
+                    font-weight: 500;
+                }
+                
+                .validation-error::before {
+                    content: '⚠';
+                    margin-right: 4px;
+                    font-size: 10px;
+                }
             `;
             document.head.appendChild(style);
         }
@@ -1629,7 +1724,7 @@
 
         // Validate form
         function validateForm() {
-            const requiredFields = ['wellType', 'depthType', 'exactDepth'];
+            const requiredFields = ['wellType', 'depthType', 'exactDepth', 'status'];
             let isValid = true;
             
             requiredFields.forEach(fieldName => {

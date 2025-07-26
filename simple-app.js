@@ -401,7 +401,8 @@ app.post('/borewells', requireAuth, [
   body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
   body('wellType').isIn(['dug-well', 'drilled-well', 'tube-well', 'hand-pump', 'other']).withMessage('Invalid well type'),
   body('depthType').trim().notEmpty().withMessage('Depth type is required'),
-  body('exactDepth').isFloat({ min: 0 }).withMessage('Depth must be a positive number')
+  body('exactDepth').isFloat({ min: 0 }).withMessage('Depth must be a positive number'),
+  body('status').isIn(['active', 'inactive', 'maintenance', 'dry']).withMessage('Invalid status')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -418,6 +419,7 @@ app.post('/borewells', requireAuth, [
         longitude: parseFloat(req.body.longitude)
       },
       exactDepth: parseFloat(req.body.exactDepth),
+      status: req.body.status || 'active',
       motorOperated: req.body.motorOperated === 'on',
       authoritiesAware: req.body.authoritiesAware === 'on',
       isPublic: req.body.isPublic === 'on'
