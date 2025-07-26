@@ -16,6 +16,11 @@
                 <i class="fas fa-tint"></i>
                 Bhujal
             </a>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <div class="nav-menu">
                 <% if (user) { %>
                     <a href="/dashboard" class="nav-link">Dashboard</a>
@@ -58,25 +63,115 @@
     <main class="main-content">
         <!-- Hero Section -->
         <section class="hero">
-            <div class="hero-background">
-                <video autoplay muted loop>
-                    <source src="/images/banner-animation.mp4" type="video/mp4">
-                    <img src="/images/banner-animation.gif" alt="Water animation">
-                </video>
-            </div>
-            <div class="hero-content">
-                <h1 class="hero-title">Groundwater Management System</h1>
-                <p class="hero-subtitle">
-                    Monitor, manage, and optimize groundwater resources with our comprehensive borewell management platform
-                </p>
-                <div class="hero-actions">
-                    <% if (user) { %>
-                        <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
-                        <a href="/map" class="btn btn-secondary">View Map</a>
-                    <% } else { %>
-                        <a href="/register" class="btn btn-primary">Get Started</a>
-                        <a href="/login" class="btn btn-secondary">Login</a>
-                    <% } %>
+            <div class="hero-container">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fas fa-tint"></i>
+                        <span>Advanced Water Management</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Smart Groundwater
+                        <span class="gradient-text">Management</span>
+                        for Sustainable Future
+                    </h1>
+                    <p class="hero-subtitle">
+                        Revolutionize how you monitor, manage, and optimize groundwater resources with our 
+                        intelligent borewell management platform. Real-time data, predictive analytics, 
+                        and community collaboration in one powerful solution.
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Registered Wells</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">25</div>
+                            <div class="stat-label">Cities Covered</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">98%</div>
+                            <div class="stat-label">Accuracy Rate</div>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <% if (user) { %>
+                            <a href="/dashboard" class="btn btn-primary btn-large">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Go to Dashboard
+                            </a>
+                            <a href="/map" class="btn btn-secondary btn-large">
+                                <i class="fas fa-map"></i>
+                                Explore Map
+                            </a>
+                        <% } else { %>
+                            <a href="/register" class="btn btn-primary btn-large">
+                                <i class="fas fa-rocket"></i>
+                                Start Free Trial
+                            </a>
+                            <a href="/login" class="btn btn-secondary btn-large">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Sign In
+                            </a>
+                        <% } %>
+                    </div>
+                    <div class="hero-trust">
+                        <p>Trusted by water management professionals worldwide</p>
+                        <div class="trust-badges">
+                            <span class="trust-badge">
+                                <i class="fas fa-shield-alt"></i>
+                                Secure
+                            </span>
+                            <span class="trust-badge">
+                                <i class="fas fa-clock"></i>
+                                Real-time
+                            </span>
+                            <span class="trust-badge">
+                                <i class="fas fa-users"></i>
+                                Community
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="visual-container">
+                        <div class="floating-card card-1">
+                            <div class="card-icon">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">Water Level</div>
+                                <div class="card-value">85%</div>
+                            </div>
+                        </div>
+                        <div class="floating-card card-2">
+                            <div class="card-icon">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">Quality</div>
+                                <div class="card-value">Good</div>
+                            </div>
+                        </div>
+                        <div class="floating-card card-3">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-title">Trend</div>
+                                <div class="card-value">↗ +12%</div>
+                            </div>
+                        </div>
+                        <div class="hero-illustration">
+                            <div class="water-drop drop-1"></div>
+                            <div class="water-drop drop-2"></div>
+                            <div class="water-drop drop-3"></div>
+                            <div class="well-illustration">
+                                <div class="well-top"></div>
+                                <div class="well-body"></div>
+                                <div class="water-level"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -84,14 +179,20 @@
         <!-- Features Section -->
         <section class="features">
             <div class="container">
-                <h2 class="section-title">Why Choose Bhujal?</h2>
+                <div class="features-header">
+                    <h2 class="section-title">Powerful Features for Water Management</h2>
+                    <p class="section-subtitle">
+                        Everything you need to monitor, analyze, and optimize your groundwater resources
+                    </p>
+                </div>
                 <div class="features-grid">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="fas fa-map-marked-alt"></i>
                         </div>
                         <h3>Interactive Mapping</h3>
-                        <p>Visualize borewell locations with our advanced mapping system and GPS integration</p>
+                        <p>Visualize borewell locations with our advanced mapping system, GPS integration, and real-time satellite imagery</p>
+                        <a href="#" class="feature-link">Learn more <i class="fas fa-arrow-right"></i></a>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">

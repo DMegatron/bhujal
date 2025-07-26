@@ -5,57 +5,80 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeAlerts();
     initializeNavigation();
     initializeForms();
+    initializeScrollEffects();
+    initializeAnimations();
 });
 
-// Alert management
-function initializeAlerts() {
-    const alerts = document.querySelectorAll('.alert');
-    
-    alerts.forEach(alert => {
-        // Auto-hide alerts after 5 seconds
-        setTimeout(() => {
-            alert.style.opacity = '0';
-            setTimeout(() => {
-                alert.remove();
-            }, 300);
-        }, 5000);
-        
-        // Add close button to alerts
-        if (!alert.querySelector('.alert-close')) {
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'alert-close';
-            closeBtn.innerHTML = '&times;';
-            closeBtn.style.cssText = `
-                background: none;
-                border: none;
-                font-size: 1.5rem;
-                margin-left: auto;
-                cursor: pointer;
-                padding: 0 0.5rem;
-            `;
-            
-            closeBtn.addEventListener('click', () => {
-                alert.style.opacity = '0';
-                setTimeout(() => {
-                    alert.remove();
-                }, 300);
-            });
-            
-            alert.appendChild(closeBtn);
-        }
-    });
-}
-
-// Navigation enhancements
+// Enhanced Navigation with Mobile Support
 function initializeNavigation() {
     const navToggle = document.querySelector('.nav-toggle');
     const navMenu = document.querySelector('.nav-menu');
+    const navbar = document.querySelector('.navbar');
     
+    // Mobile menu toggle
     if (navToggle && navMenu) {
         navToggle.addEventListener('click', () => {
             navMenu.classList.toggle('active');
+            
+            // Animate hamburger menu
+            const spans = navToggle.querySelectorAll('span');
+            spans.forEach((span, index) => {
+                if (navMenu.classList.contains('active')) {
+                    if (index === 0) span.style.transform = 'rotate(45deg) translate(5px, 5px)';
+                    if (index === 1) span.style.opacity = '0';
+                    if (index === 2) span.style.transform = 'rotate(-45deg) translate(7px, -6px)';
+                } else {
+                    span.style.transform = '';
+                    span.style.opacity = '';
+                }
+            });
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                navMenu.classList.remove('active');
+                const spans = navToggle.querySelectorAll('span');
+                spans.forEach(span => {
+                    span.style.transform = '';
+                    span.style.opacity = '';
+                });
+            }
+        });
+        
+        // Close mobile menu when clicking on a link
+        const navLinks = navMenu.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                const spans = navToggle.querySelectorAll('span');
+                spans.forEach(span => {
+                    span.style.transform = '';
+                    span.style.opacity = '';
+                });
+            });
         });
     }
+    
+    // Navbar scroll effect
+    let lastScrollTop = 0;
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > 100) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+        
+        // Hide/show navbar on scroll
+        if (scrollTop > lastScrollTop && scrollTop > 200) {
+            navbar.style.transform = 'translateY(-100%)';
+        } else {
+            navbar.style.transform = 'translateY(0)';
+        }
+        lastScrollTop = scrollTop;
+    });
     
     // Active link highlighting
     const currentPath = window.location.pathname;
@@ -68,8 +91,151 @@ function initializeNavigation() {
     });
 }
 
-// Form enhancements
-function initializeForms() {
+// Scroll Effects and Animations
+function initializeScrollEffects() {
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Intersection Observer for fade-in animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-fade-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    // Observe elements for animation
+    document.querySelectorAll('.feature-card, .card, .stat-item').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+}
+
+// Initialize animations and effects
+function initializeAnimations() {
+    // Add CSS for fade-in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        .animate-fade-in {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+        
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+        }
+        
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Add floating animation to elements
+    document.querySelectorAll('.floating-card').forEach(card => {
+        card.classList.add('floating-element');
+    });
+}
+
+// Enhanced Alert Management
+function initializeAlerts() {
+    const alerts = document.querySelectorAll('.alert');
+    
+    alerts.forEach(alert => {
+        // Auto-hide alerts after 6 seconds
+        const autoHideTimer = setTimeout(() => {
+            hideAlert(alert);
+        }, 6000);
+        
+        // Add close button if not exists
+        if (!alert.querySelector('.alert-close')) {
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'alert-close';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.setAttribute('aria-label', 'Close alert');
+            
+            closeBtn.addEventListener('click', () => {
+                clearTimeout(autoHideTimer);
+                hideAlert(alert);
+            });
+            
+            alert.appendChild(closeBtn);
+        }
+        
+        // Add slide-in animation
+        alert.style.transform = 'translateX(100%)';
+        alert.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        
+        // Trigger animation
+        setTimeout(() => {
+            alert.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Pause auto-hide on hover
+        alert.addEventListener('mouseenter', () => {
+            clearTimeout(autoHideTimer);
+        });
+        
+        alert.addEventListener('mouseleave', () => {
+            setTimeout(() => {
+                hideAlert(alert);
+            }, 2000);
+        });
+    });
+}
+
+function hideAlert(alert) {
+    alert.style.transform = 'translateX(100%)';
+    alert.style.opacity = '0';
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 400);
+}
     // Add loading states to form submissions
     const forms = document.querySelectorAll('form');
     
@@ -81,10 +247,27 @@ function initializeForms() {
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
                 submitBtn.disabled = true;
                 
+}
+
+// Enhanced Form Management
+function initializeForms() {
+    // Add loading states to form submissions
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn && !submitBtn.disabled) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                submitBtn.disabled = true;
+                submitBtn.classList.add('btn-loading');
+                
                 // Re-enable after 10 seconds (fallback)
                 setTimeout(() => {
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
+                    submitBtn.classList.remove('btn-loading');
                 }, 10000);
             }
         });
@@ -101,6 +284,27 @@ function initializeForms() {
         
         input.addEventListener('input', function() {
             clearValidationError(this);
+        });
+        
+        // Add focus effects
+        input.addEventListener('focus', function() {
+            this.parentNode.classList.add('form-group-focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentNode.classList.remove('form-group-focused');
+        });
+    });
+    
+    // Enhanced file inputs
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const fileName = this.files[0]?.name;
+            const label = this.parentNode.querySelector('label');
+            if (fileName && label) {
+                label.textContent = `Selected: ${fileName}`;
+            }
         });
     });
 }

@@ -16,6 +16,11 @@
                 <i class="fas fa-tint"></i>
                 Bhujal
             </a>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
             <div class="nav-menu">
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/map" class="nav-link active">Map</a>
@@ -48,14 +53,29 @@
         <div class="map-container">
             <!-- Map Controls -->
             <div class="map-controls">
-                <button id="addBorewellBtn" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Add Borewell
-                </button>
-                <button id="locateBtn" class="btn btn-secondary">
-                    <i class="fas fa-crosshairs"></i>
-                    Find Me
-                </button>
+                <div class="controls-group">
+                    <button id="addBorewellBtn" class="btn btn-primary" title="Click on map to add borewell">
+                        <i class="fas fa-plus"></i>
+                        Add Borewell
+                    </button>
+                    <button id="locateBtn" class="btn btn-secondary" title="Find my location">
+                        <i class="fas fa-crosshairs"></i>
+                        Find Me
+                    </button>
+                    <button id="cancelAddBtn" class="btn btn-danger" style="display: none;" title="Cancel adding borewell">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+                
+                <!-- Map Mode Indicator -->
+                <div id="mapModeIndicator" class="map-mode-indicator" style="display: none;">
+                    <div class="mode-content">
+                        <i class="fas fa-map-pin"></i>
+                        <span>Click on the map to place your borewell</span>
+                    </div>
+                </div>
+                
                 <div class="weather-widget" id="weatherWidget">
                     <div class="weather-loading">Loading weather...</div>
                 </div>
@@ -63,82 +83,147 @@
 
             <!-- Map -->
             <div id="map"></div>
+            
+            <!-- Location Info Panel -->
+            <div id="locationInfoPanel" class="location-info-panel" style="display: none;">
+                <div class="panel-header">
+                    <h4><i class="fas fa-map-marker-alt"></i> Selected Location</h4>
+                </div>
+                <div class="panel-content">
+                    <div class="location-details">
+                        <div class="detail-item">
+                            <label>Latitude:</label>
+                            <span id="selectedLat">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Longitude:</label>
+                            <span id="selectedLng">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Address:</label>
+                            <span id="selectedAddress">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="panel-actions">
+                        <button id="confirmLocationBtn" class="btn btn-success btn-small">
+                            <i class="fas fa-check"></i>
+                            Confirm & Register
+                        </button>
+                        <button id="changeLocationBtn" class="btn btn-secondary btn-small">
+                            <i class="fas fa-edit"></i>
+                            Change Location
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Borewell Registration Modal -->
             <div id="borewellModal" class="modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h2>Register New Borewell</h2>
+                        <h2><i class="fas fa-tint"></i> Register New Borewell</h2>
                         <button id="closeModal" class="modal-close">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
 
                     <form action="/borewells" method="POST" class="borewell-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="latitude">Latitude</label>
-                                <input type="number" id="latitude" name="latitude" step="any" required class="form-input">
+                        <!-- Location Information (Read-only) -->
+                        <div class="location-section">
+                            <h3><i class="fas fa-map-marker-alt"></i> Location Details</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="latitude">Latitude</label>
+                                    <input type="number" id="latitude" name="latitude" step="any" required class="form-input" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="longitude">Longitude</label>
+                                    <input type="number" id="longitude" name="longitude" step="any" required class="form-input" readonly>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="longitude">Longitude</label>
-                                <input type="number" id="longitude" name="longitude" step="any" required class="form-input">
+                                <label for="locationAddress">Address</label>
+                                <input type="text" id="locationAddress" class="form-input" readonly placeholder="Address will be auto-detected">
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="wellType">Well Type</label>
-                            <select id="wellType" name="wellType" required class="form-input">
-                                <option value="">Select Well Type</option>
-                                <option value="dug-well">Dug Well</option>
-                                <option value="drilled-well">Drilled Well</option>
-                                <option value="tube-well">Tube Well</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-
-                        <div class="form-row">
+                        <!-- Well Information -->
+                        <div class="well-section">
+                            <h3><i class="fas fa-cog"></i> Well Information</h3>
                             <div class="form-group">
-                                <label for="depthType">Depth Category</label>
-                                <select id="depthType" name="depthType" required class="form-input">
-                                    <option value="">Select Depth Category</option>
-                                    <option value="shallow">Shallow (0-50m)</option>
-                                    <option value="medium">Medium (50-150m)</option>
-                                    <option value="deep">Deep (150m+)</option>
+                                <label for="wellType">Well Type</label>
+                                <select id="wellType" name="wellType" required class="form-input form-select">
+                                    <option value="">Select Well Type</option>
+                                    <option value="dug-well">Dug Well (Traditional open well)</option>
+                                    <option value="drilled-well">Drilled Well (Machine drilled)</option>
+                                    <option value="tube-well">Tube Well (Deep bore with casing)</option>
+                                    <option value="hand-pump">Hand Pump Well</option>
+                                    <option value="other">Other</option>
                                 </select>
                             </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="depthType">Depth Category</label>
+                                    <select id="depthType" name="depthType" required class="form-input form-select">
+                                        <option value="">Select Depth Category</option>
+                                        <option value="shallow">Shallow (0-50m)</option>
+                                        <option value="medium">Medium (50-150m)</option>
+                                        <option value="deep">Deep (150m+)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="exactDepth">Exact Depth (meters)</label>
+                                    <input type="number" id="exactDepth" name="exactDepth" step="0.1" min="0" required class="form-input" placeholder="e.g., 45.5">
+                                </div>
+                            </div>
+
                             <div class="form-group">
-                                <label for="exactDepth">Exact Depth (meters)</label>
-                                <input type="number" id="exactDepth" name="exactDepth" step="0.1" min="0" required class="form-input">
+                                <label for="description">Additional Details</label>
+                                <textarea id="description" name="description" rows="3" class="form-input form-textarea" placeholder="Any additional information about the borewell (optional)"></textarea>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="description">Description (Optional)</label>
-                            <textarea id="description" name="description" rows="3" class="form-input" placeholder="Additional details about the borewell"></textarea>
-                        </div>
-
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="motorOperated" name="motorOperated">
-                                <span class="checkmark"></span>
-                                Motor Operated
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="authoritiesAware" name="authoritiesAware">
-                                <span class="checkmark"></span>
-                                Authorities Aware
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="isPublic" name="isPublic" checked>
-                                <span class="checkmark"></span>
-                                Make Public (visible to others)
-                            </label>
+                        <!-- Well Features -->
+                        <div class="features-section">
+                            <h3><i class="fas fa-wrench"></i> Well Features</h3>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="motorOperated" name="motorOperated">
+                                    <span class="checkmark"></span>
+                                    <div class="checkbox-content">
+                                        <strong>Motor Operated</strong>
+                                        <small>Electric or diesel pump installed</small>
+                                    </div>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="authoritiesAware" name="authoritiesAware">
+                                    <span class="checkmark"></span>
+                                    <div class="checkbox-content">
+                                        <strong>Authorities Aware</strong>
+                                        <small>Registered with local water authority</small>
+                                    </div>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="isPublic" name="isPublic" checked>
+                                    <span class="checkmark"></span>
+                                    <div class="checkbox-content">
+                                        <strong>Make Public</strong>
+                                        <small>Allow others to view this borewell on the map</small>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Register Borewell</button>
+                            <button type="button" id="cancelBtn" class="btn btn-secondary">
+                                <i class="fas fa-times"></i>
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Register Borewell
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -169,165 +254,621 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Initialize map
-        let map = L.map('map').setView([20.5937, 78.9629], 5); // India center
-
-        // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Borewell data
-        const borewells = JSON.parse('<%- JSON.stringify(borewells) %>');
-        const currentUserId = '<%= user.id %>';
-
-        // Add borewells to map
-        borewells.forEach(borewell => {
-            const isYourWell = borewell.customer._id === currentUserId;
-            const markerColor = isYourWell ? '#3b82f6' : '#10b981';
-            const statusColor = borewell.status === 'active' ? '#10b981' : '#f59e0b';
-
-            const marker = L.circleMarker([borewell.location.latitude, borewell.location.longitude], {
-                radius: 8,
-                fillColor: markerColor,
-                color: statusColor,
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
-
-            // Popup content
-            const popupContent = `
-                <div class="borewell-popup">
-                    <h4>${borewell.wellType.replace('-', ' ').toUpperCase()}</h4>
-                    <p><strong>Owner:</strong> ${borewell.customer.name}</p>
-                    <p><strong>Depth:</strong> ${borewell.exactDepth}m (${borewell.depthType})</p>
-                    <p><strong>Status:</strong> <span class="${borewell.status}">${borewell.status.toUpperCase()}</span></p>
-                    ${borewell.motorOperated ? '<p><i class="fas fa-cog"></i> Motor Operated</p>' : ''}
-                    ${borewell.authoritiesAware ? '<p><i class="fas fa-shield-alt"></i> Authorities Aware</p>' : ''}
-                    ${borewell.description ? `<p><strong>Description:</strong> ${borewell.description}</p>` : ''}
-                    <p><strong>Contact:</strong> ${borewell.customer.phoneNumber}</p>
-                </div>
-            `;
-
-            marker.bindPopup(popupContent);
-        });
-
-        // Modal elements
-        const modal = document.getElementById('borewellModal');
-        const addBorewellBtn = document.getElementById('addBorewellBtn');
-        const closeModal = document.getElementById('closeModal');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const latInput = document.getElementById('latitude');
-        const lngInput = document.getElementById('longitude');
-
+        // Global variables
+        let map;
+        let borewells = [];
+        let currentUserId = '';
         let selectedLocation = null;
+        let tempMarker = null;
+        let isAddingBorewell = false;
 
-        // Open modal
-        addBorewellBtn.addEventListener('click', () => {
-            modal.style.display = 'flex';
-            // Enable map clicking
-            map.on('click', onMapClick);
-            map.getContainer().style.cursor = 'crosshair';
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMap();
+            loadBorewells();
+            setupEventListeners();
+            loadInitialWeather();
         });
 
-        // Close modal
-        function closeModalFunc() {
-            modal.style.display = 'none';
-            // Disable map clicking
-            map.off('click', onMapClick);
-            map.getContainer().style.cursor = '';
-            if (selectedLocation) {
-                map.removeLayer(selectedLocation);
-                selectedLocation = null;
-            }
-        }
+        // Initialize Leaflet map
+        function initializeMap() {
+            // Create map centered on India
+            map = L.map('map', {
+                center: [20.5937, 78.9629],
+                zoom: 5,
+                zoomControl: true,
+                scrollWheelZoom: true,
+                doubleClickZoom: false // Disable double-click zoom to avoid conflicts
+            });
 
-        closeModal.addEventListener('click', closeModalFunc);
-        cancelBtn.addEventListener('click', closeModalFunc);
-
-        // Map click handler
-        function onMapClick(e) {
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-
-            // Update form inputs
-            latInput.value = lat.toFixed(6);
-            lngInput.value = lng.toFixed(6);
-
-            // Remove previous marker
-            if (selectedLocation) {
-                map.removeLayer(selectedLocation);
-            }
-
-            // Add new marker
-            selectedLocation = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    className: 'new-borewell-marker',
-                    html: '<i class="fas fa-map-pin"></i>',
-                    iconSize: [20, 20]
-                })
+            // Add tile layer with better styling
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19,
+                tileSize: 256,
+                zoomOffset: 0
             }).addTo(map);
 
-            // Load weather data
-            loadWeather(lat, lng);
+            // Add scale control
+            L.control.scale({
+                position: 'bottomright',
+                metric: true,
+                imperial: false
+            }).addTo(map);
+
+            // Custom marker styles
+            createCustomStyles();
         }
 
-        // Locate user
-        document.getElementById('locateBtn').addEventListener('click', () => {
-            if ('geolocation' in navigator) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        map.setView([lat, lng], 15);
-                        
-                        // Load weather for current location
-                        loadWeather(lat, lng);
-                    },
-                    error => {
-                        alert('Unable to get your location');
-                    }
-                );
-            } else {
-                alert('Geolocation is not supported by your browser');
+        // Load borewell data
+        function loadBorewells() {
+            try {
+                borewells = JSON.parse('<%- JSON.stringify(borewells) %>');
+                currentUserId = '<%= user.id %>';
+                addBorewellsToMap();
+            } catch (error) {
+                console.error('Error loading borewell data:', error);
+                showNotification('Error loading borewell data', 'error');
             }
-        });
+        }
 
-        // Load weather data
-        function loadWeather(lat, lng) {
-            const weatherWidget = document.getElementById('weatherWidget');
-            weatherWidget.innerHTML = '<div class="weather-loading">Loading weather...</div>';
+        // Add borewells to map with enhanced markers
+        function addBorewellsToMap() {
+            borewells.forEach(borewell => {
+                const isYourWell = borewell.customer._id === currentUserId;
+                
+                // Create custom marker icon
+                const markerIcon = createBorewellIcon(borewell, isYourWell);
+                
+                // Create marker
+                const marker = L.marker([borewell.location.latitude, borewell.location.longitude], {
+                    icon: markerIcon
+                }).addTo(map);
 
-            fetch(`/api/weather/${lat}/${lng}`)
-                .then(response => response.json())
-                .then(data => {
-                    weatherWidget.innerHTML = `
-                        <div class="weather-info">
-                            <div class="weather-main">
-                                <span class="temp">${data.temperature}°C</span>
-                                <span class="desc">${data.description}</span>
-                            </div>
-                            <div class="weather-details">
-                                <div class="weather-item">
-                                    <i class="fas fa-tint"></i>
-                                    <span>${data.humidity}%</span>
+                // Enhanced popup content
+                const popupContent = createBorewellPopup(borewell, isYourWell);
+                marker.bindPopup(popupContent, {
+                    maxWidth: 300,
+                    className: 'custom-popup'
+                });
+
+                // Add hover effects
+                marker.on('mouseover', function() {
+                    this.openPopup();
+                });
+            });
+        }
+
+        // Create custom borewell icon
+        function createBorewellIcon(borewell, isYourWell) {
+            const iconColor = isYourWell ? '#3b82f6' : '#10b981';
+            const statusColor = borewell.status === 'active' ? '#22c55e' : '#f59e0b';
+            
+            return L.divIcon({
+                className: 'custom-borewell-marker',
+                html: `
+                    <div class="borewell-marker ${isYourWell ? 'your-well' : 'other-well'} ${borewell.status}">
+                        <div class="marker-inner" style="background-color: ${iconColor}; border-color: ${statusColor};">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <div class="marker-pulse" style="background-color: ${iconColor};"></div>
+                    </div>
+                `,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15],
+                popupAnchor: [0, -15]
+            });
+        }
+
+        // Create enhanced popup content
+        function createBorewellPopup(borewell, isYourWell) {
+            return `
+                <div class="borewell-popup">
+                    <div class="popup-header">
+                        <h4><i class="fas fa-tint"></i> ${borewell.wellType.replace('-', ' ').toUpperCase()}</h4>
+                        <span class="status-badge ${borewell.status}">${borewell.status.toUpperCase()}</span>
+                    </div>
+                    
+                    <div class="popup-content">
+                        <div class="popup-section">
+                            <div class="popup-item">
+                                <i class="fas fa-user"></i>
+                                <div>
+                                    <strong>Owner:</strong>
+                                    <span>${borewell.customer.name}</span>
                                 </div>
-                                <div class="weather-item">
-                                    <i class="fas fa-wind"></i>
-                                    <span>${data.windSpeed} km/h</span>
+                            </div>
+                            
+                            <div class="popup-item">
+                                <i class="fas fa-ruler-vertical"></i>
+                                <div>
+                                    <strong>Depth:</strong>
+                                    <span>${borewell.exactDepth}m (${borewell.depthType})</span>
+                                </div>
+                            </div>
+                            
+                            <div class="popup-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <strong>Contact:</strong>
+                                    <span>${borewell.customer.phoneNumber}</span>
                                 </div>
                             </div>
                         </div>
-                    `;
-                })
-                .catch(error => {
-                    weatherWidget.innerHTML = '<div class="weather-error">Weather unavailable</div>';
-                });
+                        
+                        ${borewell.description ? `
+                            <div class="popup-section">
+                                <div class="popup-item">
+                                    <i class="fas fa-info-circle"></i>
+                                    <div>
+                                        <strong>Description:</strong>
+                                        <span>${borewell.description}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="popup-features">
+                            ${borewell.motorOperated ? '<span class="feature-tag"><i class="fas fa-cog"></i> Motor Operated</span>' : ''}
+                            ${borewell.authoritiesAware ? '<span class="feature-tag"><i class="fas fa-shield-alt"></i> Authorities Aware</span>' : ''}
+                        </div>
+                        
+                        ${isYourWell ? `
+                            <div class="popup-actions">
+                                <button class="btn btn-small btn-primary" onclick="editBorewell('${borewell._id}')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-small btn-secondary" onclick="viewBorewellDetails('${borewell._id}')">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
         }
 
-        // Load weather for Delhi initially
-        loadWeather(28.6139, 77.2090);
+        // Setup event listeners
+        function setupEventListeners() {
+            // Add borewell button
+            document.getElementById('addBorewellBtn').addEventListener('click', enterAddMode);
+            
+            // Cancel add button
+            document.getElementById('cancelAddBtn').addEventListener('click', exitAddMode);
+            
+            // Find me button
+            document.getElementById('locateBtn').addEventListener('click', locateUser);
+            
+            // Modal controls
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeModal);
+            
+            // Location panel controls
+            document.getElementById('confirmLocationBtn').addEventListener('click', openRegistrationModal);
+            document.getElementById('changeLocationBtn').addEventListener('click', () => {
+                hideLocationPanel();
+                // Keep add mode active for selecting new location
+            });
+            
+            // Form validation
+            setupFormValidation();
+        }
+
+        // Enter borewell adding mode
+        function enterAddMode() {
+            isAddingBorewell = true;
+            
+            // Update UI
+            document.getElementById('addBorewellBtn').style.display = 'none';
+            document.getElementById('cancelAddBtn').style.display = 'inline-flex';
+            document.getElementById('mapModeIndicator').style.display = 'block';
+            
+            // Change cursor
+            map.getContainer().style.cursor = 'crosshair';
+            
+            // Add map click listener
+            map.on('click', onMapClick);
+            
+            // Show instruction notification
+            showNotification('Click on the map to select a location for your borewell', 'info');
+        }
+
+        // Exit borewell adding mode
+        function exitAddMode() {
+            isAddingBorewell = false;
+            
+            // Update UI
+            document.getElementById('addBorewellBtn').style.display = 'inline-flex';
+            document.getElementById('cancelAddBtn').style.display = 'none';
+            document.getElementById('mapModeIndicator').style.display = 'none';
+            
+            // Reset cursor
+            map.getContainer().style.cursor = '';
+            
+            // Remove map click listener
+            map.off('click', onMapClick);
+            
+            // Clean up
+            removeTempMarker();
+            hideLocationPanel();
+        }
+
+        // Handle map click for adding borewell
+        function onMapClick(e) {
+            if (!isAddingBorewell) return;
+            
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+            
+            // Store selected location
+            selectedLocation = { lat, lng };
+            
+            // Remove previous temp marker
+            removeTempMarker();
+            
+            // Add new temporary marker
+            addTempMarker(lat, lng);
+            
+            // Update location panel
+            updateLocationPanel(lat, lng);
+            
+            // Get address information
+            reverseGeocode(lat, lng);
+            
+            // Load weather for location
+            loadWeather(lat, lng);
+        }
+
+        // Add temporary marker for selected location
+        function addTempMarker(lat, lng) {
+            const tempIcon = L.divIcon({
+                className: 'temp-marker',
+                html: `
+                    <div class="temp-marker-content">
+                        <div class="marker-pulse-temp"></div>
+                        <i class="fas fa-map-pin"></i>
+                    </div>
+                `,
+                iconSize: [30, 30],
+                iconAnchor: [15, 30]
+            });
+            
+            tempMarker = L.marker([lat, lng], { icon: tempIcon }).addTo(map);
+            
+            // Animate to location
+            map.setView([lat, lng], Math.max(map.getZoom(), 15), {
+                animate: true,
+                duration: 1
+            });
+        }
+
+        // Remove temporary marker
+        function removeTempMarker() {
+            if (tempMarker) {
+                map.removeLayer(tempMarker);
+                tempMarker = null;
+            }
+        }
+
+        // Update location information panel
+        function updateLocationPanel(lat, lng) {
+            document.getElementById('selectedLat').textContent = lat.toFixed(6);
+            document.getElementById('selectedLng').textContent = lng.toFixed(6);
+            document.getElementById('selectedAddress').textContent = 'Loading...';
+            document.getElementById('locationInfoPanel').style.display = 'block';
+        }
+
+        // Hide location panel
+        function hideLocationPanel() {
+            document.getElementById('locationInfoPanel').style.display = 'none';
+        }
+
+        // Reverse geocoding to get address
+        async function reverseGeocode(lat, lng) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                const data = await response.json();
+                
+                if (data && data.display_name) {
+                    document.getElementById('selectedAddress').textContent = data.display_name;
+                } else {
+                    document.getElementById('selectedAddress').textContent = 'Address not found';
+                }
+            } catch (error) {
+                console.error('Error getting address:', error);
+                document.getElementById('selectedAddress').textContent = 'Address unavailable';
+            }
+        }
+
+        // Open registration modal with location data
+        function openRegistrationModal() {
+            if (!selectedLocation) return;
+            
+            // Fill location data
+            document.getElementById('latitude').value = selectedLocation.lat.toFixed(6);
+            document.getElementById('longitude').value = selectedLocation.lng.toFixed(6);
+            document.getElementById('locationAddress').value = document.getElementById('selectedAddress').textContent;
+            
+            // Show modal
+            document.getElementById('borewellModal').style.display = 'flex';
+            
+            // Focus on first input
+            setTimeout(() => {
+                document.getElementById('wellType').focus();
+            }, 100);
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('borewellModal').style.display = 'none';
+            exitAddMode();
+        }
+
+        // Locate user
+        function locateUser() {
+            if (!navigator.geolocation) {
+                showNotification('Geolocation is not supported by your browser', 'error');
+                return;
+            }
+            
+            // Show loading
+            const locateBtn = document.getElementById('locateBtn');
+            const originalContent = locateBtn.innerHTML;
+            locateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+            locateBtn.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Animate to user location
+                    map.setView([lat, lng], 15, { animate: true });
+                    
+                    // Add user location marker
+                    const userIcon = L.divIcon({
+                        className: 'user-location-marker',
+                        html: '<i class="fas fa-user"></i>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+                    
+                    L.marker([lat, lng], { icon: userIcon })
+                        .addTo(map)
+                        .bindPopup('<strong>Your Location</strong>')
+                        .openPopup();
+                    
+                    // Load weather
+                    loadWeather(lat, lng);
+                    
+                    // Reset button
+                    locateBtn.innerHTML = originalContent;
+                    locateBtn.disabled = false;
+                    
+                    showNotification('Location found successfully!', 'success');
+                },
+                (error) => {
+                    let message = 'Unable to get your location';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = 'Location access denied by user';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = 'Location information unavailable';
+                            break;
+                        case error.TIMEOUT:
+                            message = 'Location request timed out';
+                            break;
+                    }
+                    
+                    showNotification(message, 'error');
+                    
+                    // Reset button
+                    locateBtn.innerHTML = originalContent;
+                    locateBtn.disabled = false;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 300000
+                }
+            );
+        }
+
+        // Load weather data
+        async function loadWeather(lat, lng) {
+            const weatherWidget = document.getElementById('weatherWidget');
+            weatherWidget.innerHTML = '<div class="weather-loading"><i class="fas fa-spinner fa-spin"></i> Loading weather...</div>';
+
+            try {
+                const response = await fetch(`/api/weather/${lat}/${lng}`);
+                const data = await response.json();
+                
+                weatherWidget.innerHTML = `
+                    <div class="weather-info">
+                        <div class="weather-main">
+                            <span class="temp">${data.temperature}°C</span>
+                            <span class="desc">${data.description}</span>
+                        </div>
+                        <div class="weather-details">
+                            <div class="weather-item">
+                                <i class="fas fa-tint"></i>
+                                <span>${data.humidity}%</span>
+                            </div>
+                            <div class="weather-item">
+                                <i class="fas fa-wind"></i>
+                                <span>${data.windSpeed} km/h</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Weather error:', error);
+                weatherWidget.innerHTML = '<div class="weather-error">Weather unavailable</div>';
+            }
+        }
+
+        // Load initial weather (Delhi)
+        function loadInitialWeather() {
+            loadWeather(28.6139, 77.2090);
+        }
+
+        // Create custom CSS styles
+        function createCustomStyles() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .custom-borewell-marker {
+                    position: relative;
+                }
+                
+                .borewell-marker {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .marker-inner {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 12px;
+                    border: 3px solid;
+                    z-index: 2;
+                    position: relative;
+                }
+                
+                .marker-pulse {
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    opacity: 0.3;
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0% { transform: scale(0.8); opacity: 0.5; }
+                    50% { transform: scale(1.2); opacity: 0.3; }
+                    100% { transform: scale(0.8); opacity: 0.5; }
+                }
+                
+                .temp-marker-content {
+                    position: relative;
+                    color: #ef4444;
+                    font-size: 18px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .marker-pulse-temp {
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    background-color: #ef4444;
+                    opacity: 0.3;
+                    animation: pulse 1s infinite;
+                }
+                
+                .user-location-marker {
+                    background: #3b82f6;
+                    color: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Form validation setup
+        function setupFormValidation() {
+            const form = document.querySelector('.borewell-form');
+            
+            form.addEventListener('submit', function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+                submitBtn.disabled = true;
+            });
+        }
+
+        // Validate form
+        function validateForm() {
+            const requiredFields = ['wellType', 'depthType', 'exactDepth'];
+            let isValid = true;
+            
+            requiredFields.forEach(fieldName => {
+                const field = document.getElementById(fieldName);
+                if (!field.value.trim()) {
+                    showValidationError(field, 'This field is required');
+                    isValid = false;
+                } else {
+                    clearValidationError(field);
+                }
+            });
+            
+            // Validate depth
+            const depth = document.getElementById('exactDepth').value;
+            if (depth && (isNaN(depth) || depth <= 0)) {
+                showValidationError(document.getElementById('exactDepth'), 'Please enter a valid depth');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+
+        // Show validation error
+        function showValidationError(input, message) {
+            clearValidationError(input);
+            input.classList.add('error');
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'validation-error';
+            errorDiv.textContent = message;
+            input.parentNode.appendChild(errorDiv);
+        }
+
+        // Clear validation error
+        function clearValidationError(input) {
+            input.classList.remove('error');
+            const errorDiv = input.parentNode.querySelector('.validation-error');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        }
+
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            // Use the main.js notification function if available
+            if (window.BhujalUtils && window.BhujalUtils.showNotification) {
+                window.BhujalUtils.showNotification(message, type);
+            } else {
+                alert(message);
+            }
+        }
+
+        // Placeholder functions for future implementation
+        function editBorewell(id) {
+            showNotification('Edit functionality coming soon!', 'info');
+        }
+
+        function viewBorewellDetails(id) {
+            showNotification('Details view coming soon!', 'info');
+        }
     </script>
     <script src="/js/main.js"></script>
 </body>
