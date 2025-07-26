@@ -313,12 +313,49 @@
                 doubleClickZoom: false // Disable double-click zoom to avoid conflicts
             });
 
-            // Add tile layer with better styling
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19,
-                tileSize: 256,
-                zoomOffset: 0
+            // Define different tile layers
+            const baseLayers = {
+                "Street Map": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19,
+                    tileSize: 256,
+                    zoomOffset: 0
+                }),
+                
+                "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+                    maxZoom: 19
+                }),
+                
+                "Satellite with Labels": L.layerGroup([
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+                        maxZoom: 19
+                    }),
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© <a href="https://www.esri.com/">Esri</a>',
+                        maxZoom: 19
+                    })
+                ]),
+                
+                "Terrain": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://opentopomap.org/">OpenTopoMap</a> contributors',
+                    maxZoom: 17
+                }),
+                
+                "CartoDB Light": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
+                    maxZoom: 19
+                })
+            };
+
+            // Add default layer (Street Map)
+            baseLayers["Street Map"].addTo(map);
+
+            // Add layer control
+            L.control.layers(baseLayers, null, {
+                position: 'topright',
+                collapsed: false
             }).addTo(map);
 
             // Add scale control
@@ -1414,6 +1451,160 @@
                     align-items: center;
                     justify-content: center;
                     font-size: 12px;
+                }
+                
+                /* Layer Control Styling */
+                .leaflet-control-layers {
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(10px);
+                    border-radius: 12px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    padding: 8px;
+                    min-width: 180px;
+                }
+                
+                .leaflet-control-layers-toggle {
+                    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                    color: white;
+                    border-radius: 8px;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                }
+                
+                .leaflet-control-layers-list {
+                    padding: 8px 0;
+                }
+                
+                .leaflet-control-layers label {
+                    display: flex;
+                    align-items: center;
+                    padding: 6px 8px;
+                    margin: 2px 0;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: #374151;
+                }
+                
+                .leaflet-control-layers label:hover {
+                    background: rgba(59, 130, 246, 0.1);
+                    color: #1d4ed8;
+                }
+                
+                .leaflet-control-layers input[type="radio"] {
+                    margin-right: 8px;
+                    width: 16px;
+                    height: 16px;
+                    accent-color: #3b82f6;
+                }
+                
+                .leaflet-control-layers-expanded {
+                    padding: 12px;
+                }
+                
+                .leaflet-control-layers-separator {
+                    border-top: 1px solid rgba(0, 0, 0, 0.1);
+                    margin: 8px 0;
+                }
+                
+                /* Search Result Marker Styling */
+                .search-result-marker {
+                    color: #f59e0b;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .search-marker-content {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .search-marker-pulse {
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    background-color: #f59e0b;
+                    opacity: 0.3;
+                    animation: pulse 2s infinite;
+                }
+                
+                /* Alert Styling */
+                .alert {
+                    display: flex;
+                    align-items: center;
+                    padding: 12px 16px;
+                    margin: 16px 20px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    border-left: 4px solid;
+                    animation: slideInDown 0.3s ease-out;
+                }
+                
+                .alert i {
+                    margin-right: 8px;
+                    font-size: 16px;
+                }
+                
+                .alert-success {
+                    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+                    color: #166534;
+                    border-left-color: #22c55e;
+                }
+                
+                .alert-error {
+                    background: linear-gradient(135deg, #fecaca, #fca5a5);
+                    color: #dc2626;
+                    border-left-color: #ef4444;
+                }
+                
+                .alert-warning {
+                    background: linear-gradient(135deg, #fef3c7, #fde68a);
+                    color: #d97706;
+                    border-left-color: #f59e0b;
+                }
+                
+                .alert-info {
+                    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+                    color: #1d4ed8;
+                    border-left-color: #3b82f6;
+                }
+                
+                @keyframes slideInDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                /* Mobile responsive alerts */
+                @media (max-width: 768px) {
+                    .alert {
+                        margin: 12px 10px;
+                        padding: 10px 14px;
+                        font-size: 14px;
+                    }
+                    
+                    .alert i {
+                        font-size: 14px;
+                        margin-right: 6px;
+                    }
                 }
             `;
             document.head.appendChild(style);
