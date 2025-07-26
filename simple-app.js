@@ -100,7 +100,7 @@ const borewellSchema = new mongoose.Schema({
   wellType: {
     type: String,
     required: true,
-    enum: ['dug-well', 'drilled-well', 'tube-well', 'other']
+    enum: ['dug-well', 'drilled-well', 'tube-well', 'hand-pump', 'other']
   },
   depthType: {
     type: String,
@@ -351,7 +351,7 @@ app.get('/map', requireAuth, async (req, res) => {
 app.post('/borewells', requireAuth, [
   body('latitude').isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
   body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
-  body('wellType').isIn(['dug-well', 'drilled-well', 'tube-well', 'other']).withMessage('Invalid well type'),
+  body('wellType').isIn(['dug-well', 'drilled-well', 'tube-well', 'hand-pump', 'other']).withMessage('Invalid well type'),
   body('depthType').trim().notEmpty().withMessage('Depth type is required'),
   body('exactDepth').isFloat({ min: 0 }).withMessage('Depth must be a positive number')
 ], async (req, res) => {
@@ -464,6 +464,7 @@ async function generateReportData(userId) {
       'dug-well': borewells.filter(b => b.wellType === 'dug-well').length,
       'drilled-well': borewells.filter(b => b.wellType === 'drilled-well').length,
       'tube-well': borewells.filter(b => b.wellType === 'tube-well').length,
+      'hand-pump': borewells.filter(b => b.wellType === 'hand-pump').length,
       'other': borewells.filter(b => b.wellType === 'other').length
     };
     

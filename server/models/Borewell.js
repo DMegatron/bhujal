@@ -27,7 +27,7 @@ const borewellSchema = new mongoose.Schema({
   wellType: {
     type: String,
     required: [true, 'Well type is required'],
-    enum: ['dug-well', 'drilled-well', 'tube-well', 'other']
+    enum: ['dug-well', 'drilled-well', 'tube-well', 'hand-pump', 'other']
   },
   depthType: {
     type: String,

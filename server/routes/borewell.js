@@ -17,7 +17,7 @@ router.post('/register', auth, [
     .isFloat({ min: -180, max: 180 })
     .withMessage('Longitude must be between -180 and 180'),
   body('wellType')
-    .isIn(['dug-well', 'drilled-well', 'tube-well', 'other'])
+    .isIn(['dug-well', 'drilled-well', 'tube-well', 'hand-pump', 'other'])
     .withMessage('Invalid well type'),
   body('depthType')
     .trim()
