@@ -1,57 +1,59 @@
-# Bhujal Express API Server Requirements
-# Backend API Dependencies for the Express-based server
+# Bhujal Node.js Groundwater Management System
+# This file lists the dependencies for reference - actual dependencies are managed via package.json
 
-# Core Framework
-express@^4.18.2
+## Project Structure
+This is a Node.js Express application, not a Python project.
+The actual dependencies are managed in the root package.json file.
 
-# Database
-mongoose@^8.0.3
+## Current Dependencies (from package.json):
 
-# Authentication & Security
-bcryptjs@^2.4.3
-jsonwebtoken@^9.0.2
-cors@^2.8.5
-helmet@^7.1.0
-express-rate-limit@^7.1.5
+### Production Dependencies:
+- express@^4.18.2          # Web framework
+- mongoose@^7.5.0          # MongoDB ODM
+- bcryptjs@^2.4.3          # Password hashing
+- express-session@^1.17.3  # Session management
+- express-validator@^7.0.1 # Input validation
+- connect-flash@^0.1.1     # Flash messages
+- method-override@^3.0.0   # HTTP method override
+- helmet@^7.0.0            # Security headers
+- ejs@^3.1.9               # Template engine
+- axios@^1.11.0            # HTTP client for APIs
+- dotenv@^16.3.1           # Environment variables
 
-# Validation
-express-validator@^7.0.1
+### Development Dependencies:
+- nodemon@^3.0.1           # Development server with auto-reload
 
-# File Upload
-multer@^1.4.5-lts.1
+## Installation Instructions:
+1. Make sure you have Node.js (v16 or higher) installed
+2. Navigate to the project root directory
+3. Run: npm install
+4. Create a .env file with required environment variables
+5. For development: npm run dev
+6. For production: npm start
 
-# HTTP Client
-axios@^1.6.2
+## Runtime Requirements:
+- Node.js v16.x or higher
+- MongoDB 4.4 or higher (local or Atlas cloud)
+- NPM v8.x or higher
 
-# Environment Configuration
-dotenv@^16.3.1
+## Development Scripts (from package.json):
+- npm start: Start production server (node simple-app.js)
+- npm run dev: Start development server with nodemon
 
-# Development Dependencies
-nodemon@^3.0.2
-jest@^29.7.0
+## Environment Variables Required (.env file):
+- MONGODB_URI=mongodb://localhost:27017/bhujal
+- SESSION_SECRET=your-session-secret-key
+- WEATHER_API_KEY=your-openweather-api-key (optional)
+- PORT=3000 (optional, defaults to 3000)
+- NODE_ENV=development (or production)
 
-# Installation Instructions:
-# 1. Make sure you have Node.js (v16 or higher) installed
-# 2. Navigate to the server directory: cd server
-# 3. Run: npm install
-# 4. For development: npm run dev
-# 5. For production: npm start
+## Database Setup:
+The application uses MongoDB with Mongoose ODM.
+Collections: users, borewells
 
-# Runtime Requirements:
-# - Node.js v16.x or higher
-# - MongoDB 4.4 or higher (local or cloud)
-# - NPM v8.x or higher
-
-# Development Scripts:
-# - npm start: Start production server
-# - npm run dev: Start development server with nodemon
-# - npm test: Run test suite with Jest
-
-# Environment Variables Required:
-# - MONGODB_URI (MongoDB connection string)
-# - JWT_SECRET (JWT signing secret)
-# - JWT_EXPIRE (JWT expiration time, e.g., 30d)
-# - PORT (optional, defaults to 5000)
-# - NODE_ENV (development/production)
-# - WEATHER_API_KEY (OpenWeather API key)
-# - CORS_ORIGIN (Allowed CORS origin, e.g., http://localhost:3000)
+## API Endpoints:
+- Authentication: /login, /register, /logout
+- Borewells: /api/borewells (CRUD operations)
+- Reports: /reports, /api/reports/export
+- Weather: /api/weather (current conditions)
+- Maps: /map (interactive map interface)
