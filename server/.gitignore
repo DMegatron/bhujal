@@ -141,3 +141,5 @@ k8s/
 # TypeScript
 *.tsbuildinfo
 typings/
+
+*.pkl
