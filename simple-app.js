@@ -380,7 +380,20 @@ app.get('/dashboard', requireAuth, async (req, res) => {
   }
 });
 
-// Map page
+// Public prediction page (no auth required)
+app.get('/predict', async (req, res) => {
+  try {
+    res.render('predict', { 
+      title: 'Water Level Prediction - Bhujal',
+      user: req.session.user || null
+    });
+  } catch (error) {
+    console.error('Error loading prediction page:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Map page (requires auth)
 app.get('/map', requireAuth, async (req, res) => {
   try {
     const borewells = await Borewell.find({ isPublic: true }).populate('customer', 'name phoneNumber');
@@ -401,7 +414,8 @@ app.post('/borewells', requireAuth, [
   body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
   body('wellType').isIn(['dug-well', 'drilled-well', 'tube-well', 'hand-pump', 'other']).withMessage('Invalid well type'),
   body('depthType').trim().notEmpty().withMessage('Depth type is required'),
-  body('exactDepth').isFloat({ min: 0 }).withMessage('Depth must be a positive number')
+  body('exactDepth').isFloat({ min: 0 }).withMessage('Depth must be a positive number'),
+  body('status').isIn(['active', 'inactive', 'maintenance', 'dry']).withMessage('Invalid status')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -418,6 +432,7 @@ app.post('/borewells', requireAuth, [
         longitude: parseFloat(req.body.longitude)
       },
       exactDepth: parseFloat(req.body.exactDepth),
+      status: req.body.status || 'active',
       motorOperated: req.body.motorOperated === 'on',
       authoritiesAware: req.body.authoritiesAware === 'on',
       isPublic: req.body.isPublic === 'on'
@@ -848,9 +863,10 @@ app.get('/api/weather/:lat/:lng', async (req, res) => {
   }
 });
 
-// Groundwater Prediction API using ML model
+// Groundwater Prediction API using ML model (public access)
 app.post('/api/prediction/groundwater', async (req, res) => {
   try {
+    console.log('Prediction API called with:', req.body);
     const { latitude, longitude } = req.body;
     
     // Validation

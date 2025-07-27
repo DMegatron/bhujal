@@ -53,6 +53,35 @@
         <div class="map-container">
             <!-- Map Controls -->
             <div class="map-controls">
+                <!-- Search Box -->
+                <div class="map-search-container">
+                    <div class="search-input-wrapper">
+                        <input 
+                            type="text" 
+                            id="mapSearchInput" 
+                            class="map-search-input" 
+                            placeholder="Search by state, city, district, PIN code..."
+                            autocomplete="off"
+                        >
+                        <button id="mapSearchBtn" class="map-search-btn" title="Search location">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button id="clearSearchBtn" class="map-clear-btn" title="Clear search" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="searchSuggestions" class="search-suggestions" style="display: none;"></div>
+                    <div id="searchResults" class="search-results" style="display: none;">
+                        <div class="search-results-header">
+                            <span>Search Results</span>
+                            <button id="closeSearchResults" class="close-results-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="searchResultsList" class="search-results-list"></div>
+                    </div>
+                </div>
+
                 <div class="controls-group">
                     <button id="addBorewellBtn" class="btn btn-primary" title="Click on map to add borewell">
                         <i class="fas fa-plus"></i>
@@ -198,6 +227,17 @@
                                 <label for="description">Additional Details</label>
                                 <textarea id="description" name="description" rows="3" class="form-input form-textarea" placeholder="Any additional information about the borewell (optional)"></textarea>
                             </div>
+
+                            <div class="form-group">
+                                <label for="status">Well Status</label>
+                                <select id="status" name="status" required class="form-input form-select">
+                                    <option value="">Select Well Status</option>
+                                    <option value="active" selected>Active (Working)</option>
+                                    <option value="inactive">Inactive (Not in use)</option>
+                                    <option value="maintenance">Under Maintenance</option>
+                                    <option value="dry">Dry (No water)</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Well Features -->
@@ -277,6 +317,8 @@
         let selectedLocation = null;
         let tempMarker = null;
         let isAddingBorewell = false;
+        let searchMarkers = [];
+        let searchDebounceTimer = null;
         let isPredictingWater = false;
 
         // Initialize the application
@@ -285,6 +327,7 @@
             loadBorewells();
             setupEventListeners();
             loadInitialWeather();
+            setupSearchFunctionality();
         });
 
         // Initialize Leaflet map
@@ -298,12 +341,49 @@
                 doubleClickZoom: false // Disable double-click zoom to avoid conflicts
             });
 
-            // Add tile layer with better styling
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 19,
-                tileSize: 256,
-                zoomOffset: 0
+            // Define different tile layers
+            const baseLayers = {
+                "Street Map": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19,
+                    tileSize: 256,
+                    zoomOffset: 0
+                }),
+                
+                "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '© <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+                    maxZoom: 19
+                }),
+                
+                "Satellite with Labels": L.layerGroup([
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+                        maxZoom: 19
+                    }),
+                    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '© <a href="https://www.esri.com/">Esri</a>',
+                        maxZoom: 19
+                    })
+                ]),
+                
+                "Terrain": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://opentopomap.org/">OpenTopoMap</a> contributors',
+                    maxZoom: 17
+                }),
+                
+                "CartoDB Light": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+                    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attribution">CARTO</a>',
+                    maxZoom: 19
+                })
+            };
+
+            // Add default layer (Street Map)
+            baseLayers["Street Map"].addTo(map);
+
+            // Add layer control
+            L.control.layers(baseLayers, null, {
+                position: 'topright',
+                collapsed: false
             }).addTo(map);
 
             // Add scale control
@@ -348,27 +428,24 @@
                 
                 weatherContainer.innerHTML = `
                     <div class="borewell-weather-info">
-                        <div class="weather-compact">
-                            <div class="weather-temp">
-                                <img src="https://openweathermap.org/img/wn/${data.icon}.png" alt="${data.description}">
-                                <span class="temp">${data.temperature}°C</span>
+                        <div class="weather-compact weather-grid">
+                            <div class="weather-item-grid">
+                                <i class="fas fa-thermometer-half"></i>
+                                <span>${data.temperature}°C</span>
                             </div>
-                            <div class="weather-details-compact">
-                                <div class="weather-item-small">
-                                    <i class="fas fa-tint"></i>
-                                    <span>${data.humidity}%</span>
-                                </div>
-                                <div class="weather-item-small">
-                                    <i class="fas fa-wind"></i>
-                                    <span>${data.windSpeed} km/h</span>
-                                </div>
-                                <div class="weather-item-small">
-                                    <i class="fas fa-thermometer-half"></i>
-                                    <span>${data.pressure} hPa</span>
-                                </div>
+                            <div class="weather-item-grid">
+                                <i class="fas fa-tint"></i>
+                                <span>${data.humidity}%</span>
+                            </div>
+                            <div class="weather-item-grid">
+                                <i class="fas fa-wind"></i>
+                                <span>${data.windSpeed} km/h</span>
+                            </div>
+                            <div class="weather-item-grid">
+                                <i class="fas fa-weight"></i>
+                                <span>${data.pressure} hPa</span>
                             </div>
                         </div>
-                        <div class="weather-desc">${data.description}</div>
                     </div>
                 `;
                 
@@ -380,24 +457,6 @@
                         <span>Weather unavailable</span>
                     </div>
                 `;
-            }
-        }
-
-        // Get weather forecast
-        async function getForecast(lat, lng, borewellId = null) {
-            try {
-                const response = await fetch(`/api/weather/forecast?lat=${lat}&lng=${lng}&days=5`);
-                const result = await response.json();
-                
-                if (!result.success) {
-                    throw new Error(result.message);
-                }
-                
-                showForecastModal(result, borewellId);
-                
-            } catch (error) {
-                console.error('Forecast error:', error);
-                showNotification('Failed to load weather forecast', 'error');
             }
         }
 
@@ -417,17 +476,32 @@
                     })
                 });
                 
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response. Please make sure you are logged in.');
+                }
+                
                 const result = await response.json();
                 
                 if (!result.success) {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Prediction failed');
                 }
                 
                 showGroundwaterPredictionModal(result.data);
                 
             } catch (error) {
                 console.error('Groundwater prediction error:', error);
-                showNotification('Failed to predict groundwater level: ' + error.message, 'error');
+                let errorMessage = error.message;
+                if (error.message.includes('Unexpected token')) {
+                    errorMessage = 'Authentication required. Please log in to use the prediction feature.';
+                }
+                showNotification('Failed to predict groundwater level: ' + errorMessage, 'error');
             }
         }
 
@@ -449,66 +523,6 @@
                 console.error('Water level prediction error:', error);
                 showNotification('Failed to predict water level', 'error');
             }
-        }
-
-        // Show forecast modal
-        function showForecastModal(forecastData, borewellId) {
-            const modal = document.createElement('div');
-            modal.className = 'modal forecast-modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2><i class="fas fa-calendar-alt"></i> 5-Day Weather Forecast</h2>
-                        <button class="modal-close" onclick="this.closest('.modal').remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    <div class="forecast-location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        ${forecastData.city}, ${forecastData.country}
-                        ${borewellId ? '<span class="forecast-label">Borewell Location</span>' : '<span class="forecast-label">Selected Location</span>'}
-                    </div>
-                    <div class="forecast-content">
-                        ${forecastData.forecast.map(day => `
-                            <div class="forecast-day">
-                                <div class="forecast-date">
-                                    ${new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                </div>
-                                <div class="forecast-temp">
-                                    <span class="temp-high">${day.temperature.max}°</span>
-                                    <span class="temp-low">${day.temperature.min}°</span>
-                                </div>
-                                <div class="forecast-desc">${day.description}</div>
-                                <div class="forecast-details">
-                                    <div class="detail-item">
-                                        <i class="fas fa-tint"></i>
-                                        <span>${day.humidity}%</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="fas fa-wind"></i>
-                                        <span>${day.windSpeed} km/h</span>
-                                    </div>
-                                    ${day.precipitation > 0 ? `
-                                        <div class="detail-item">
-                                            <i class="fas fa-cloud-rain"></i>
-                                            <span>${day.precipitation} mm</span>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
-                            <i class="fas fa-times"></i>
-                            Close
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            modal.style.display = 'flex';
         }
 
         // Show water level prediction
@@ -806,15 +820,10 @@
                                 <button class="btn btn-small btn-secondary" onclick="viewBorewellDetails('${borewell._id}')">
                                     <i class="fas fa-eye"></i> Details
                                 </button>
-                                <button class="btn btn-small btn-info" onclick="getForecast(${borewell.location.latitude}, ${borewell.location.longitude}, '${borewell._id}')">
-                                    <i class="fas fa-calendar-alt"></i> Forecast
-                                </button>
                             </div>
                         ` : `
                             <div class="popup-actions">
-                                <button class="btn btn-small btn-info" onclick="getForecast(${borewell.location.latitude}, ${borewell.location.longitude}, '${borewell._id}')">
-                                    <i class="fas fa-calendar-alt"></i> View Forecast
-                                </button>
+                                <!-- No actions for other users' borewells -->
                             </div>
                         `}
                     </div>
@@ -852,6 +861,417 @@
             
             // Form validation
             setupFormValidation();
+        }
+
+        // Setup search functionality
+        function setupSearchFunctionality() {
+            const searchInput = document.getElementById('mapSearchInput');
+            const searchBtn = document.getElementById('mapSearchBtn');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const closeResultsBtn = document.getElementById('closeSearchResults');
+            
+            // Search input event listeners
+            searchInput.addEventListener('input', handleSearchInput);
+            searchInput.addEventListener('keydown', handleSearchKeydown);
+            searchInput.addEventListener('focus', showSearchSuggestions);
+            searchInput.addEventListener('blur', hideSearchSuggestions);
+            
+            // Button event listeners
+            searchBtn.addEventListener('click', performSearch);
+            clearBtn.addEventListener('click', clearSearch);
+            closeResultsBtn.addEventListener('click', closeSearchResults);
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.map-search-container')) {
+                    hideSearchSuggestions();
+                }
+            });
+        }
+
+        // Handle search input with debouncing
+        function handleSearchInput(e) {
+            const query = e.target.value.trim();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const inputWrapper = document.querySelector('.search-input-wrapper');
+            
+            // Show/hide clear button and animate layout
+            if (query.length > 0) {
+                clearBtn.style.display = 'block';
+                inputWrapper.classList.add('has-text');
+            } else {
+                clearBtn.style.display = 'none';
+                inputWrapper.classList.remove('has-text');
+                hideSearchSuggestions();
+                return;
+            }
+            
+            // Debounce the search to avoid too many API calls
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                if (query.length >= 3) {
+                    fetchSearchSuggestions(query);
+                }
+            }, 300);
+        }
+
+        // Handle search input keydown events
+        function handleSearchKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            } else if (e.key === 'Escape') {
+                clearSearch();
+            }
+        }
+
+        // Fetch search suggestions from Nominatim API
+        async function fetchSearchSuggestions(query) {
+            try {
+                // Focus on Indian locations by adding country bias
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?` +
+                    `format=json&limit=5&countrycodes=in&q=${encodeURIComponent(query)}&` +
+                    `addressdetails=1&extratags=1`
+                );
+                
+                if (!response.ok) throw new Error('Search API error');
+                
+                const suggestions = await response.json();
+                displaySearchSuggestions(suggestions);
+                
+            } catch (error) {
+                console.error('Search suggestions error:', error);
+                hideSearchSuggestions();
+            }
+        }
+
+        // Display search suggestions
+        function displaySearchSuggestions(suggestions) {
+            const suggestionsContainer = document.getElementById('searchSuggestions');
+            
+            if (!suggestions || suggestions.length === 0) {
+                hideSearchSuggestions();
+                return;
+            }
+            
+            suggestionsContainer.innerHTML = suggestions.map((suggestion, index) => {
+                const displayName = formatLocationName(suggestion);
+                const locationInfo = getLocationInfo(suggestion);
+                
+                return `
+                    <div class="suggestion-item" data-index="${index}" onclick="selectSuggestion(${index})">
+                        <div class="suggestion-main">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="suggestion-name">${displayName}</span>
+                        </div>
+                        <div class="suggestion-details">
+                            ${locationInfo}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Store suggestions for selection
+            window.currentSuggestions = suggestions;
+            suggestionsContainer.style.display = 'block';
+        }
+
+        // Format location name for display
+        function formatLocationName(location) {
+            const address = location.address || {};
+            const name = location.display_name;
+            
+            // Try to extract meaningful parts
+            const parts = [];
+            
+            if (address.village) parts.push(address.village);
+            else if (address.town) parts.push(address.town);
+            else if (address.city) parts.push(address.city);
+            else if (address.district) parts.push(address.district);
+            
+            if (address.state && !parts.includes(address.state)) {
+                parts.push(address.state);
+            }
+            
+            return parts.length > 0 ? parts.join(', ') : name.split(',')[0];
+        }
+
+        // Get location info for suggestions
+        function getLocationInfo(location) {
+            const address = location.address || {};
+            const type = location.type || location.class;
+            
+            const info = [];
+            
+            if (address.postcode) info.push(`PIN: ${address.postcode}`);
+            if (address.district && !info.some(i => i.includes(address.district))) {
+                info.push(`District: ${address.district}`);
+            }
+            if (type) info.push(`Type: ${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            
+            return info.join(' • ');
+        }
+
+        // Select a suggestion
+        function selectSuggestion(index) {
+            const suggestion = window.currentSuggestions[index];
+            if (!suggestion) return;
+            
+            const searchInput = document.getElementById('mapSearchInput');
+            searchInput.value = formatLocationName(suggestion);
+            
+            hideSearchSuggestions();
+            
+            // Navigate to location
+            const lat = parseFloat(suggestion.lat);
+            const lng = parseFloat(suggestion.lon);
+            
+            navigateToLocation(lat, lng, suggestion);
+        }
+
+        // Navigate to selected location
+        function navigateToLocation(lat, lng, locationData = null) {
+            // Clear previous search markers
+            clearSearchMarkers();
+            
+            // Determine appropriate zoom level based on location type
+            let zoomLevel = 15;
+            if (locationData) {
+                const type = locationData.type;
+                if (type === 'state') zoomLevel = 7;
+                else if (type === 'district') zoomLevel = 10;
+                else if (type === 'city' || type === 'town') zoomLevel = 13;
+                else if (type === 'village') zoomLevel = 15;
+            }
+            
+            // Animate to location
+            map.setView([lat, lng], zoomLevel, {
+                animate: true,
+                duration: 1.5
+            });
+            
+            // Add search result marker
+            const searchIcon = L.divIcon({
+                className: 'search-result-marker',
+                html: `
+                    <div class="search-marker-content">
+                        <div class="search-marker-pulse"></div>
+                        <i class="fas fa-search"></i>
+                    </div>
+                `,
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+            
+            const searchMarker = L.marker([lat, lng], { icon: searchIcon }).addTo(map);
+            
+            // Add popup with location information
+            if (locationData) {
+                const popupContent = createSearchPopupContent(locationData);
+                searchMarker.bindPopup(popupContent, {
+                    maxWidth: 300,
+                    className: 'search-popup'
+                }).openPopup();
+            }
+            
+            searchMarkers.push(searchMarker);
+            
+            // Load weather for the location
+            loadWeather(lat, lng);
+            
+            showNotification(`Navigated to ${locationData ? formatLocationName(locationData) : 'selected location'}`, 'success');
+        }
+
+        // Create popup content for search results
+        function createSearchPopupContent(locationData) {
+            const address = locationData.address || {};
+            const displayName = formatLocationName(locationData);
+            
+            return `
+                <div class="search-popup-content">
+                    <div class="search-popup-header">
+                        <h4><i class="fas fa-map-marker-alt"></i> ${displayName}</h4>
+                    </div>
+                    <div class="search-popup-details">
+                        ${address.state ? `<div class="detail-item"><strong>State:</strong> ${address.state}</div>` : ''}
+                        ${address.district ? `<div class="detail-item"><strong>District:</strong> ${address.district}</div>` : ''}
+                        ${address.postcode ? `<div class="detail-item"><strong>PIN Code:</strong> ${address.postcode}</div>` : ''}
+                        ${locationData.type ? `<div class="detail-item"><strong>Type:</strong> ${locationData.type.charAt(0).toUpperCase() + locationData.type.slice(1)}</div>` : ''}
+                    </div>
+                    <div class="search-popup-actions">
+                        <button class="btn btn-small btn-primary" onclick="addBorewellHere(${locationData.lat}, ${locationData.lon})">
+                            <i class="fas fa-plus"></i> Add Borewell Here
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add borewell at specific location
+        function addBorewellHere(lat, lng) {
+            // Close any open popups
+            map.closePopup();
+            
+            // Set up for adding borewell
+            selectedLocation = { lat, lng };
+            
+            // Remove previous temp marker
+            removeTempMarker();
+            
+            // Add temp marker
+            addTempMarker(lat, lng);
+            
+            // Update location panel
+            updateLocationPanel(lat, lng);
+            
+            // Get address information
+            reverseGeocode(lat, lng);
+            
+            // Enter add mode
+            enterAddMode();
+            
+            showNotification('Location selected for borewell registration', 'info');
+        }
+
+        // Perform search
+        async function performSearch() {
+            const searchInput = document.getElementById('mapSearchInput');
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                showNotification('Please enter a location to search', 'warning');
+                return;
+            }
+            
+            // Show loading
+            const searchBtn = document.getElementById('mapSearchBtn');
+            const originalContent = searchBtn.innerHTML;
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            searchBtn.disabled = true;
+            
+            try {
+                // Search with more detailed results
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?` +
+                    `format=json&limit=10&countrycodes=in&q=${encodeURIComponent(query)}&` +
+                    `addressdetails=1&extratags=1&dedupe=1`
+                );
+                
+                if (!response.ok) throw new Error('Search failed');
+                
+                const results = await response.json();
+                
+                if (results.length === 0) {
+                    showNotification('No results found for your search', 'warning');
+                } else if (results.length === 1) {
+                    // Single result - navigate directly
+                    const result = results[0];
+                    navigateToLocation(parseFloat(result.lat), parseFloat(result.lon), result);
+                    hideSearchSuggestions();
+                } else {
+                    // Multiple results - show results panel
+                    displaySearchResults(results);
+                    hideSearchSuggestions();
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showNotification('Search failed. Please try again.', 'error');
+            } finally {
+                // Restore button
+                searchBtn.innerHTML = originalContent;
+                searchBtn.disabled = false;
+            }
+        }
+
+        // Display search results in side panel
+        function displaySearchResults(results) {
+            const resultsContainer = document.getElementById('searchResults');
+            const resultsList = document.getElementById('searchResultsList');
+            
+            resultsList.innerHTML = results.map((result, index) => {
+                const displayName = formatLocationName(result);
+                const fullAddress = result.display_name;
+                const locationInfo = getLocationInfo(result);
+                
+                return `
+                    <div class="search-result-item" onclick="selectSearchResult(${index})">
+                        <div class="result-header">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="result-name">${displayName}</span>
+                        </div>
+                        <div class="result-address">${fullAddress}</div>
+                        ${locationInfo ? `<div class="result-info">${locationInfo}</div>` : ''}
+                        <div class="result-actions">
+                            <button class="btn btn-small btn-outline" onclick="event.stopPropagation(); navigateToLocation(${result.lat}, ${result.lon}, ${JSON.stringify(result).replace(/"/g, '&quot;')})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-small btn-outline" onclick="event.stopPropagation(); addBorewellHere(${result.lat}, ${result.lon})">
+                                <i class="fas fa-plus"></i> Add Borewell
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Store results for selection
+            window.currentSearchResults = results;
+            resultsContainer.style.display = 'block';
+        }
+
+        // Select search result
+        function selectSearchResult(index) {
+            const result = window.currentSearchResults[index];
+            if (!result) return;
+            
+            navigateToLocation(parseFloat(result.lat), parseFloat(result.lon), result);
+            closeSearchResults();
+        }
+
+        // Clear search
+        function clearSearch() {
+            const searchInput = document.getElementById('mapSearchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const inputWrapper = document.querySelector('.search-input-wrapper');
+            
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            inputWrapper.classList.remove('has-text');
+            
+            hideSearchSuggestions();
+            closeSearchResults();
+            clearSearchMarkers();
+            
+            searchInput.focus();
+        }
+
+        // Clear search markers
+        function clearSearchMarkers() {
+            searchMarkers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+            searchMarkers = [];
+        }
+
+        // Show search suggestions
+        function showSearchSuggestions() {
+            const query = document.getElementById('mapSearchInput').value.trim();
+            if (query.length >= 3 && window.currentSuggestions && window.currentSuggestions.length > 0) {
+                document.getElementById('searchSuggestions').style.display = 'block';
+            }
+        }
+
+        // Hide search suggestions
+        function hideSearchSuggestions() {
+            setTimeout(() => {
+                document.getElementById('searchSuggestions').style.display = 'none';
+            }, 200);
+        }
+
+        // Close search results
+        function closeSearchResults() {
+            document.getElementById('searchResults').style.display = 'none';
         }
 
         // Enter prediction mode
@@ -1151,24 +1571,22 @@
                 const data = result.data;
                 
                 weatherContainer.innerHTML = `
-                    <div class="weather-compact">
-                        <div class="weather-items">
-                            <div class="weather-item">
-                                <i class="fas fa-thermometer-half"></i>
-                                <span class="value">${data.temperature}°C</span>
-                            </div>
-                            <div class="weather-item">
-                                <i class="fas fa-wind"></i>
-                                <span class="value">${data.windSpeed} km/h</span>
-                            </div>
-                            <div class="weather-item">
-                                <i class="fas fa-tint"></i>
-                                <span class="value">${data.humidity}%</span>
-                            </div>
-                            <div class="weather-item">
-                                <i class="fas fa-weight"></i>
-                                <span class="value">${data.pressure} hPa</span>
-                            </div>
+                    <div class="weather-compact weather-grid">
+                        <div class="weather-item-grid">
+                            <i class="fas fa-thermometer-half"></i>
+                            <span>${data.temperature}°C</span>
+                        </div>
+                        <div class="weather-item-grid">
+                            <i class="fas fa-tint"></i>
+                            <span>${data.humidity}%</span>
+                        </div>
+                        <div class="weather-item-grid">
+                            <i class="fas fa-wind"></i>
+                            <span>${data.windSpeed} km/h</span>
+                        </div>
+                        <div class="weather-item-grid">
+                            <i class="fas fa-weight"></i>
+                            <span>${data.pressure} hPa</span>
                         </div>
                     </div>
                 `;
@@ -1266,6 +1684,249 @@
                     justify-content: center;
                     font-size: 12px;
                 }
+                
+                /* Layer Control Styling */
+                .leaflet-control-layers {
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(10px);
+                    border-radius: 12px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    padding: 8px;
+                    min-width: 180px;
+                }
+                
+                .leaflet-control-layers-toggle {
+                    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                    color: white;
+                    border-radius: 8px;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                }
+                
+                .leaflet-control-layers-list {
+                    padding: 8px 0;
+                }
+                
+                .leaflet-control-layers label {
+                    display: flex;
+                    align-items: center;
+                    padding: 6px 8px;
+                    margin: 2px 0;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    font-size: 13px;
+                    font-weight: 500;
+                    color: #374151;
+                }
+                
+                .leaflet-control-layers label:hover {
+                    background: rgba(59, 130, 246, 0.1);
+                    color: #1d4ed8;
+                }
+                
+                .leaflet-control-layers input[type="radio"] {
+                    margin-right: 8px;
+                    width: 16px;
+                    height: 16px;
+                    accent-color: #3b82f6;
+                }
+                
+                .leaflet-control-layers-expanded {
+                    padding: 12px;
+                }
+                
+                .leaflet-control-layers-separator {
+                    border-top: 1px solid rgba(0, 0, 0, 0.1);
+                    margin: 8px 0;
+                }
+                
+                /* Search Result Marker Styling */
+                .search-result-marker {
+                    color: #f59e0b;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .search-marker-content {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .search-marker-pulse {
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    background-color: #f59e0b;
+                    opacity: 0.3;
+                    animation: pulse 2s infinite;
+                }
+                
+                /* Weather Grid Styling */
+                .weather-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    grid-template-rows: 1fr 1fr;
+                    gap: 8px;
+                    padding: 12px;
+                    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                    border-radius: 8px;
+                    border: 1px solid rgba(148, 163, 184, 0.2);
+                }
+                
+                .weather-item-grid {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-direction: column;
+                    padding: 8px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 6px;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
+                    min-height: 50px;
+                }
+                
+                .weather-item-grid:hover {
+                    background: rgba(255, 255, 255, 0.9);
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+                }
+                
+                .weather-item-grid i {
+                    font-size: 16px;
+                    color: #3b82f6;
+                    margin-bottom: 4px;
+                }
+                
+                .weather-item-grid span {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #374151;
+                    text-align: center;
+                    line-height: 1.2;
+                }
+                
+                /* Responsive weather grid */
+                @media (max-width: 768px) {
+                    .weather-grid {
+                        gap: 6px;
+                        padding: 10px;
+                    }
+                    
+                    .weather-item-grid {
+                        padding: 6px;
+                        min-height: 45px;
+                    }
+                    
+                    .weather-item-grid i {
+                        font-size: 14px;
+                    }
+                    
+                    .weather-item-grid span {
+                        font-size: 11px;
+                    }
+                }
+                
+                /* Alert Styling */
+                .alert {
+                    display: flex;
+                    align-items: center;
+                    padding: 12px 16px;
+                    margin: 16px 20px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    border-left: 4px solid;
+                    animation: slideInDown 0.3s ease-out;
+                }
+                
+                .alert i {
+                    margin-right: 8px;
+                    font-size: 16px;
+                }
+                
+                .alert-success {
+                    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+                    color: #166534;
+                    border-left-color: #22c55e;
+                }
+                
+                .alert-error {
+                    background: linear-gradient(135deg, #fecaca, #fca5a5);
+                    color: #dc2626;
+                    border-left-color: #ef4444;
+                }
+                
+                .alert-warning {
+                    background: linear-gradient(135deg, #fef3c7, #fde68a);
+                    color: #d97706;
+                    border-left-color: #f59e0b;
+                }
+                
+                .alert-info {
+                    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+                    color: #1d4ed8;
+                    border-left-color: #3b82f6;
+                }
+                
+                @keyframes slideInDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                /* Mobile responsive alerts */
+                @media (max-width: 768px) {
+                    .alert {
+                        margin: 12px 10px;
+                        padding: 10px 14px;
+                        font-size: 14px;
+                    }
+                    
+                    .alert i {
+                        font-size: 14px;
+                        margin-right: 6px;
+                    }
+                }
+                
+                /* Form validation styles */
+                .form-input.error,
+                .form-select.error {
+                    border-color: #ef4444;
+                    background-color: #fef2f2;
+                    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+                }
+                
+                .validation-error {
+                    color: #dc2626;
+                    font-size: 12px;
+                    margin-top: 4px;
+                    display: flex;
+                    align-items: center;
+                    font-weight: 500;
+                }
+                
+                .validation-error::before {
+                    content: '⚠';
+                    margin-right: 4px;
+                    font-size: 10px;
+                }
             `;
             document.head.appendChild(style);
         }
@@ -1289,7 +1950,7 @@
 
         // Validate form
         function validateForm() {
-            const requiredFields = ['wellType', 'depthType', 'exactDepth'];
+            const requiredFields = ['wellType', 'depthType', 'exactDepth', 'status'];
             let isValid = true;
             
             requiredFields.forEach(fieldName => {

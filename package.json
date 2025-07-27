@@ -1,11 +1,18 @@
 {
-  "name": "bhujal-simple",
+  "name": "bhujal-groundwater-management",
   "version": "1.0.0",
-  "description": "Simple Node.js Groundwater Management System",
+  "description": "Full-stack Node.js Groundwater Management System with MongoDB, Express, and EJS",
   "main": "simple-app.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "start": "node simple-app.js",
-    "dev": "nodemon simple-app.js"
+    "dev": "nodemon simple-app.js",
+    "install-deps": "npm install",
+    "setup": "npm install && node -e \"console.log('✅ Dependencies installed! Create .env file and run: npm run dev')\"",
+    "check": "node -e \"console.log('Node.js:', process.version); console.log('NPM:', require('child_process').execSync('npm -v').toString().trim());\""
   },
   "dependencies": {
     "axios": "^1.11.0",
@@ -28,8 +35,20 @@
     "borewell",
     "water-management",
     "nodejs",
-    "express"
+    "express",
+    "mongodb",
+    "environmental-monitoring",
+    "mapping",
+    "weather-api"
   ],
   "author": "Bhujal Team",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DMegatron/bhujal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DMegatron/bhujal/issues"
+  },
+  "homepage": "https://github.com/DMegatron/bhujal#readme"
 }
