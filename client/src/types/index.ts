@@ -124,6 +124,52 @@ export interface PredictionRequest {
   longitude: number;
 }
 
+export interface SeasonalPattern {
+  month: string;
+  monthNumber: number;
+  waterLevel: number;
+  relativeLevel: number;
+  status: string;
+  description: string;
+}
+
+export interface SeasonalAnalysis {
+  regionType: string;
+  climateZone: string;
+  seasonalPatterns: SeasonalPattern[];
+  criticalMonths: string[];
+  rechargePeriod: {
+    months: string[];
+    description: string;
+  };
+  stressedPeriod: {
+    months: string[];
+    description: string;
+  };
+}
+
+export interface DrillingTimeline {
+  urgency: string;
+  optimalMonths: number[];
+  avoidMonths: number[];
+  timeline: Array<{
+    month: string;
+    monthNumber: number;
+    monthsFromNow: number;
+    recommendation: string;
+    action: string;
+    reasoning: string;
+  }>;
+  reasoning: string;
+}
+
+export interface BestDrillingTime {
+  month: number;
+  monthName: string;
+  monthsFromNow: number;
+  recommendation: string;
+}
+
 export interface PredictionResult {
   currentWaterLevel: number;
   futureWaterLevel: number;
@@ -133,7 +179,15 @@ export interface PredictionResult {
     latitude: number;
     longitude: number;
   };
-  recommendations: string[];
+  yearlyPredictions: Array<{
+    year: string;
+    predictedLevel: number;
+  }>;
+  suitabilityNote: string;
+  seasonalAnalysis: SeasonalAnalysis;
+  drillingTimeline: DrillingTimeline;
+  bestDrillingTime: BestDrillingTime;
+  recommendations?: string[];
   monthlyPredictions?: Array<{
     month: string;
     predictedLevel: number;

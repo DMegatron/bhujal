@@ -309,6 +309,7 @@
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Global variables
         let map;
@@ -594,95 +595,461 @@
             modal.style.display = 'flex';
         }
 
-        // Show groundwater prediction modal with ML results
+        // Show groundwater prediction modal with enhanced seasonal analysis
         function showGroundwaterPredictionModal(prediction) {
             const modal = document.createElement('div');
-            modal.className = 'modal groundwater-prediction-modal';
+            modal.className = 'modal groundwater-prediction-modal enhanced-prediction';
             modal.innerHTML = `
-                <div class="modal-content">
+                <div class="modal-content enhanced-content">
                     <div class="modal-header">
-                        <h2><i class="fas fa-chart-line"></i> Groundwater Level Prediction</h2>
+                        <h2><i class="fas fa-chart-line"></i> Groundwater Analysis & Drilling Advisory</h2>
                         <button class="modal-close" onclick="this.closest('.modal').remove()">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="prediction-content">
-                        <div class="location-info">
-                            <h4><i class="fas fa-map-marker-alt"></i> Location</h4>
-                            <p>Lat: ${prediction.location.latitude.toFixed(6)}, Lng: ${prediction.location.longitude.toFixed(6)}</p>
-                        </div>
-                        
-                        <div class="prediction-results">
-                            <div class="prediction-card current">
-                                <div class="card-header">
-                                    <i class="fas fa-water"></i>
-                                    <span>Current Water Level</span>
+                    <div class="prediction-content enhanced-layout">
+                        <!-- Main Summary Section -->
+                        <div class="prediction-summary-enhanced">
+                            <div class="summary-cards">
+                                <div class="current-level-card enhanced">
+                                    <div class="card-icon">
+                                        <i class="fas fa-water"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <h3>Current Water Level</h3>
+                                        <div class="level-value ${prediction.currentWaterLevel > 20 ? 'excellent' : prediction.currentWaterLevel > 15 ? 'good' : prediction.currentWaterLevel > 10 ? 'moderate' : prediction.currentWaterLevel > 5 ? 'poor' : 'critical'}">
+                                            ${prediction.currentWaterLevel}<span class="unit">m (mbgl)</span>
+                                        </div>
+                                        <div class="level-description">
+                                            Depth below ground level
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="prediction-value ${prediction.currentWaterLevel > 20 ? 'good' : prediction.currentWaterLevel > 10 ? 'moderate' : 'poor'}">
-                                    <span class="value">${prediction.currentWaterLevel}</span>
-                                    <span class="unit">meters</span>
+                                
+                                <div class="future-level-card enhanced">
+                                    <div class="card-icon">
+                                        <i class="fas fa-trend-up"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <h3>Future Level (3 years)</h3>
+                                        <div class="level-value ${prediction.futureWaterLevel > 20 ? 'excellent' : prediction.futureWaterLevel > 15 ? 'good' : prediction.futureWaterLevel > 10 ? 'moderate' : prediction.futureWaterLevel > 5 ? 'poor' : 'critical'}">
+                                            ${prediction.futureWaterLevel}<span class="unit">m (mbgl)</span>
+                                        </div>
+                                        <div class="level-description">
+                                            Projected depth in 2028
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="suitability-card enhanced ${prediction.isSuitableForBorewell ? 'suitable' : 'not-suitable'}">
+                                    <div class="suitability-icon">
+                                        <i class="fas ${prediction.isSuitableForBorewell ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                                    </div>
+                                    <div class="suitability-content">
+                                        <h3>${prediction.isSuitableForBorewell ? 'Suitable for Borewell' : 'Not Suitable for Borewell'}</h3>
+                                        <div class="suitability-note">
+                                            ${prediction.suitabilityNote}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div class="prediction-card future">
-                                <div class="card-header">
-                                    <i class="fas fa-chart-line"></i>
-                                    <span>Future Prediction (6 months)</span>
-                                </div>
-                                <div class="prediction-value ${prediction.futureWaterLevel > 20 ? 'good' : prediction.futureWaterLevel > 10 ? 'moderate' : 'poor'}">
-                                    <span class="value">${prediction.futureWaterLevel}</span>
-                                    <span class="unit">meters</span>
+                        </div>
+
+                        <!-- Regional Context Section -->
+                        ${prediction.seasonalAnalysis ? `
+                            <div class="regional-context-section">
+                                <h3><i class="fas fa-globe-asia"></i> Regional Context</h3>
+                                <div class="context-cards">
+                                    <div class="context-card">
+                                        <i class="fas fa-mountain"></i>
+                                        <div class="context-info">
+                                            <div class="context-label">Region</div>
+                                            <div class="context-value">${prediction.seasonalAnalysis.regionType}</div>
+                                        </div>
+                                    </div>
+                                    <div class="context-card">
+                                        <i class="fas fa-cloud-sun"></i>
+                                        <div class="context-info">
+                                            <div class="context-label">Climate Zone</div>
+                                            <div class="context-value">${prediction.seasonalAnalysis.climateZone}</div>
+                                        </div>
+                                    </div>
+                                    <div class="context-card critical-months">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <div class="context-info">
+                                            <div class="context-label">Critical Months</div>
+                                            <div class="context-value">${prediction.seasonalAnalysis.criticalMonths.join(', ')}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="suitability-section">
-                            <div class="suitability-card ${prediction.isSuitableForBorewell ? 'suitable' : 'not-suitable'}">
-                                <div class="suitability-icon">
-                                    <i class="fas ${prediction.isSuitableForBorewell ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                        ` : ''}
+
+                        <!-- Drilling Recommendations Section -->
+                        ${prediction.drillingTimeline ? `
+                            <div class="drilling-recommendations-section">
+                                <h3 style="margin-bottom: 5px;"><i class="fas fa-hard-hat"></i> Drilling Recommendations</h3>
+                                
+                                <div class="drilling-summary">
+                                    <div class="urgency-indicator ${prediction.drillingTimeline.urgency.toLowerCase()}">
+                                        <i class="fas ${prediction.drillingTimeline.urgency === 'Immediate' ? 'fa-exclamation-circle' : prediction.drillingTimeline.urgency === 'High' ? 'fa-clock' : prediction.drillingTimeline.urgency === 'Moderate' ? 'fa-calendar-check' : 'fa-calendar-alt'}"></i>
+                                        <span>Urgency: ${prediction.drillingTimeline.urgency}</span>
+                                    </div>
+                                    
+                                    ${prediction.bestDrillingTime ? `
+                                        <div class="best-time-recommendation">
+                                            <div class="best-time-header">
+                                                <i class="fas fa-star"></i>
+                                                <span>Best Drilling Time</span>
+                                            </div>
+                                            <div class="best-time-content">
+                                                <div class="best-time-month">${prediction.bestDrillingTime.monthName}</div>
+                                                <div class="best-time-countdown">
+                                                    ${prediction.bestDrillingTime.monthsFromNow === 0 ? 
+                                                        '<span class="start-now">Start Now!</span>' : 
+                                                        `<span class="countdown">${prediction.bestDrillingTime.monthsFromNow} months away</span>`
+                                                    }
+                                                </div>
+                                                <div class="best-time-recommendation-text">
+                                                    ${prediction.bestDrillingTime.recommendation}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ` : ''}
                                 </div>
-                                <div class="suitability-text">
-                                    <h4>${prediction.isSuitableForBorewell ? 'Suitable for Borewell' : 'Not Suitable for Borewell'}</h4>
-                                    <p>Confidence: ${(prediction.confidence * 100).toFixed(1)}%</p>
+
+                                <div class="drilling-reasoning">
+                                    <h4><i class="fas fa-lightbulb"></i> Expert Analysis</h4>
+                                    <p>${prediction.drillingTimeline.reasoning}</p>
                                 </div>
                             </div>
-                        </div>
-                        
-                        ${prediction.monthlyPredictions && prediction.monthlyPredictions.length > 0 ? `
-                            <div class="monthly-predictions">
-                                <h4><i class="fas fa-calendar-alt"></i> Monthly Predictions</h4>
-                                <div class="predictions-grid">
-                                    ${prediction.monthlyPredictions.map(month => `
-                                        <div class="month-prediction">
-                                            <span class="month">${month.month}</span>
-                                            <span class="level ${month.predictedLevel > 20 ? 'good' : month.predictedLevel > 10 ? 'moderate' : 'poor'}">${month.predictedLevel}m</span>
+                        ` : ''}
+
+                        <!-- Seasonal Patterns Section -->
+                        ${prediction.seasonalAnalysis && prediction.seasonalAnalysis.seasonalPatterns ? `
+                            <div class="seasonal-patterns-section">
+                                <h3 style="margin-bottom: 5px;"><i class="fas fa-calendar"></i> Seasonal Water Level Forecast</h3>
+                                
+                                <div class="seasonal-insights">
+                                    <div class="insight-card recharge">
+                                        <i class="fas fa-tint"></i>
+                                        <div class="insight-content">
+                                            <div class="insight-title">Recharge Period</div>
+                                            <div class="insight-months">${prediction.seasonalAnalysis.rechargePeriod.months.join(', ')}</div>
+                                            <div class="insight-description">${prediction.seasonalAnalysis.rechargePeriod.description}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="insight-card stressed">
+                                        <i class="fas fa-thermometer-full"></i>
+                                        <div class="insight-content">
+                                            <div class="insight-title">Stressed Period</div>
+                                            <div class="insight-months">${prediction.seasonalAnalysis.stressedPeriod.months.join(', ')}</div>
+                                            <div class="insight-description">${prediction.seasonalAnalysis.stressedPeriod.description}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="seasonal-timeline">
+                                    <h4>Next 12 Months Water Level Prediction</h4>
+                                    <div class="chart-container">
+                                        <canvas id="seasonalChart-${Date.now()}" class="seasonal-chart"></canvas>
+                                    </div>
+                                    <div class="chart-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-color critical"></div>
+                                            <span>Critical (Deep water level)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color low"></div>
+                                            <span>Low (Stressed period)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color moderate"></div>
+                                            <span>Moderate (Normal level)</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color good"></div>
+                                            <span>Good (Recharge period)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- 5-Year Trend Section -->
+                        ${prediction.yearlyPredictions && prediction.yearlyPredictions.length > 0 ? `
+                            <div class="yearly-predictions-enhanced">
+                                <h3 style="margin-bottom: 5px;"><i class="fas fa-chart-area"></i> 5-Year Water Table Trend</h3>
+                                <div class="trend-description">
+                                    <p><strong>Note:</strong> Values show depth below ground level (mbgl). Increasing values indicate deepening water table due to depletion.</p>
+                                </div>
+                                <div class="predictions-timeline-enhanced">
+                                    ${prediction.yearlyPredictions.map((year, index) => `
+                                        <div class="year-prediction-card enhanced">
+                                            <div class="year-header">
+                                                <div class="year-label">${year.year}</div>
+                                                ${index > 0 ? `
+                                                    <div class="change-indicator ${year.predictedLevel > prediction.yearlyPredictions[index-1].predictedLevel ? 'increasing' : 'decreasing'}">
+                                                        <i class="fas ${year.predictedLevel > prediction.yearlyPredictions[index-1].predictedLevel ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                                                        ${Math.abs(year.predictedLevel - prediction.yearlyPredictions[index-1].predictedLevel).toFixed(1)}m
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                            <div class="prediction-level ${year.predictedLevel > 80 ? 'critical' : year.predictedLevel > 50 ? 'poor' : year.predictedLevel > 30 ? 'moderate' : year.predictedLevel > 15 ? 'good' : 'excellent'}">
+                                                ${year.predictedLevel}m
+                                            </div>
+                                            <div class="level-status">
+                                                ${year.predictedLevel > 80 ? 'Very Deep' : year.predictedLevel > 50 ? 'Deep' : year.predictedLevel > 30 ? 'Moderate' : year.predictedLevel > 15 ? 'Good' : 'Excellent'}
+                                            </div>
                                         </div>
                                     `).join('')}
                                 </div>
                             </div>
                         ` : ''}
-                        
-                        ${prediction.recommendations && prediction.recommendations.length > 0 ? `
-                            <div class="recommendations">
-                                <h4><i class="fas fa-lightbulb"></i> Recommendations</h4>
-                                <ul class="recommendations-list">
-                                    ${prediction.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                                </ul>
-                            </div>
-                        ` : ''}
-                        
-                        <div class="prediction-note">
-                            <p><strong>Note:</strong> This prediction is based on machine learning models analyzing geographical and environmental factors. Actual water levels may vary based on local geological conditions, seasonal patterns, and other factors. For accurate assessment, consider consulting local hydrogeologists.</p>
-                        </div>
                     </div>
-                    <div class="modal-actions">
-                        <button class="btn btn-primary" onclick="this.closest('.modal').remove()">
-                            <i class="fas fa-download"></i>
-                            Save Report
-                        </button>
+                    <div class="modal-actions enhanced">
                         <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
                             <i class="fas fa-times"></i>
                             Close
+                        </button>
+                        ${prediction.isSuitableForBorewell ? `
+                            <button class="btn btn-primary" onclick="this.closest('.modal').remove(); showPlanningGuide()">
+                                <i class="fas fa-calendar-plus"></i>
+                                Plan Drilling
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+            
+            // Initialize seasonal chart if seasonal data exists
+            if (prediction.seasonalAnalysis && prediction.seasonalAnalysis.seasonalPatterns) {
+                setTimeout(() => {
+                    createSeasonalChart(prediction.seasonalAnalysis.seasonalPatterns);
+                }, 100);
+            }
+        }
+
+        // Create seasonal water level chart
+        function createSeasonalChart(seasonalPatterns) {
+            const chartCanvas = document.querySelector('.seasonal-chart');
+            if (!chartCanvas) return;
+            
+            // Prepare data for the chart
+            const months = seasonalPatterns.slice(0, 12).map(pattern => pattern.month.substr(0, 3));
+            const waterLevels = seasonalPatterns.slice(0, 12).map(pattern => parseFloat(pattern.waterLevel));
+            const statuses = seasonalPatterns.slice(0, 12).map(pattern => pattern.status);
+            
+            // Create background colors based on status
+            const backgroundColors = statuses.map(status => {
+                if (status.includes('Critical')) return 'rgba(220, 38, 38, 0.6)';
+                if (status.includes('Low')) return 'rgba(245, 158, 11, 0.6)';
+                if (status.includes('Moderate')) return 'rgba(59, 130, 246, 0.6)';
+                return 'rgba(5, 150, 105, 0.6)';
+            });
+            
+            const borderColors = statuses.map(status => {
+                if (status.includes('Critical')) return 'rgba(220, 38, 38, 1)';
+                if (status.includes('Low')) return 'rgba(245, 158, 11, 1)';
+                if (status.includes('Moderate')) return 'rgba(59, 130, 246, 1)';
+                return 'rgba(5, 150, 105, 1)';
+            });
+            
+            // Create the chart
+            new Chart(chartCanvas, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Water Level (meters below ground)',
+                        data: waterLevels,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: borderColors,
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#475569',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const index = context[0].dataIndex;
+                                    return seasonalPatterns[index].month;
+                                },
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    const pattern = seasonalPatterns[index];
+                                    return [
+                                        `Water Level: ${pattern.waterLevel}m (mbgl)`,
+                                        `Status: ${pattern.status}`,
+                                        `${pattern.description}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            reverse: true, // Reverse because lower values (shallower water) are better
+                            title: {
+                                display: true,
+                                text: 'Depth Below Ground (meters)',
+                                color: '#64748b',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.3)'
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                callback: function(value) {
+                                    return value + 'm';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months (Next 12 Months)',
+                                color: '#64748b',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.2)'
+                            },
+                            ticks: {
+                                color: '#64748b'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 8
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Show drilling planning guide
+        function showPlanningGuide() {
+            const modal = document.createElement('div');
+            modal.className = 'modal planning-guide-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-calendar-plus"></i> Drilling Planning Guide</h2>
+                        <button class="modal-close" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="planning-content">
+                        <div class="planning-steps">
+                            <div class="step-card">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h4>Prepare Documentation</h4>
+                                    <ul>
+                                        <li>Get drilling permits from local authorities</li>
+                                        <li>Prepare land ownership documents</li>
+                                        <li>Contact licensed drilling contractors</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="step-card">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h4>Schedule Drilling</h4>
+                                    <ul>
+                                        <li>Plan for optimal drilling window</li>
+                                        <li>Avoid monsoon and extreme weather</li>
+                                        <li>Ensure equipment and materials availability</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="step-card">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h4>Monitor Progress</h4>
+                                    <ul>
+                                        <li>Track drilling depth and water strikes</li>
+                                        <li>Test water quality upon completion</li>
+                                        <li>Install proper casing and pump systems</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="planning-tips">
+                            <h3><i class="fas fa-lightbulb"></i> Pro Tips</h3>
+                            <div class="tips-grid">
+                                <div class="tip-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Best drilling time is during dry season for stable ground conditions</span>
+                                </div>
+                                <div class="tip-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Always use licensed contractors for quality and compliance</span>
+                                </div>
+                                <div class="tip-item">
+                                    <i class="fas fa-flask"></i>
+                                    <span>Test water quality before use, especially for drinking water</span>
+                                </div>
+                                <div class="tip-item">
+                                    <i class="fas fa-tools"></i>
+                                    <span>Plan for proper maintenance and monitoring systems</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                            Close
+                        </button>
+                        <button class="btn btn-primary" onclick="this.closest('.modal').remove(); enterAddMode()">
+                            <i class="fas fa-plus"></i>
+                            Add Borewell Here
                         </button>
                     </div>
                 </div>
@@ -1926,6 +2293,561 @@
                     content: '⚠';
                     margin-right: 4px;
                     font-size: 10px;
+                }
+
+                /* Enhanced Prediction Modal Styles */
+                .enhanced-prediction .modal-content {
+                    max-width: 900px;
+                    max-height: 95vh;
+                    overflow-y: auto;
+                }
+
+                .enhanced-content {
+                    animation: slideInUp 0.4s ease-out;
+                }
+
+                .prediction-summary-enhanced {
+                    margin-bottom: 2rem;
+                }
+
+                .summary-cards {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .current-level-card.enhanced,
+                .future-level-card.enhanced,
+                .suitability-card.enhanced {
+                    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                    border: 1px solid #cbd5e1;
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+
+                .current-level-card.enhanced:hover,
+                .future-level-card.enhanced:hover,
+                .suitability-card.enhanced:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+                }
+
+                .level-description {
+                    font-size: 0.875rem;
+                    color: #64748b;
+                    margin-top: 0.5rem;
+                }
+
+                .suitability-note {
+                    font-size: 0.875rem;
+                    color: #475569;
+                    margin-top: 0.5rem;
+                    line-height: 1.5;
+                }
+
+                /* Regional Context */
+                .regional-context-section {
+                    background: #f1f5f9;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                }
+
+                .context-cards {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1rem;
+                    margin-top: 1rem;
+                }
+
+                .context-card {
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .context-card.critical-months {
+                    border-color: #f59e0b;
+                    background: #fffbeb;
+                }
+
+                .context-card i {
+                    font-size: 1.25rem;
+                    color: #3b82f6;
+                }
+
+                .context-card.critical-months i {
+                    color: #f59e0b;
+                }
+
+                .context-label {
+                    font-size: 0.75rem;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                    letter-spacing: 0.05em;
+                }
+
+                .context-value {
+                    font-weight: 600;
+                    color: #1e293b;
+                }
+
+                /* Drilling Recommendations */
+                .drilling-recommendations-section {
+                    background: #f8fafc;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                }
+
+                .drilling-summary {
+                    display: flex;
+                    gap: 2rem;
+                    margin-bottom: 1.5rem;
+                    align-items: flex-start;
+                }
+
+                .urgency-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.75rem 1rem;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                }
+
+                .urgency-indicator.immediate {
+                    background: #fef2f2;
+                    color: #dc2626;
+                    border: 1px solid #fecaca;
+                }
+
+                .urgency-indicator.high {
+                    background: #fef3c7;
+                    color: #d97706;
+                    border: 1px solid #fed7aa;
+                }
+
+                .urgency-indicator.moderate {
+                    background: #dbeafe;
+                    color: #2563eb;
+                    border: 1px solid #bfdbfe;
+                }
+
+                .urgency-indicator.low {
+                    background: #d1fae5;
+                    color: #059669;
+                    border: 1px solid #a7f3d0;
+                }
+
+                .best-time-recommendation {
+                    flex: 1;
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .best-time-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 0.75rem;
+                    color: #3b82f6;
+                    font-weight: 600;
+                }
+
+                .best-time-month {
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    color: #1e293b;
+                }
+
+                .start-now {
+                    color: #059669;
+                    font-weight: 600;
+                    padding: 0.25rem 0.5rem;
+                    background: #d1fae5;
+                    border-radius: 4px;
+                    font-size: 0.875rem;
+                }
+
+                .countdown {
+                    color: #d97706;
+                    font-weight: 600;
+                }
+
+                .best-time-recommendation-text {
+                    font-size: 0.875rem;
+                    color: #64748b;
+                    margin-top: 0.5rem;
+                }
+
+                .drilling-reasoning {
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .drilling-reasoning h4 {
+                    color: #3b82f6;
+                    margin-bottom: 0.75rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                /* Seasonal Patterns */
+                .seasonal-patterns-section {
+                    background: #f1f5f9;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                }
+
+                .seasonal-insights {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                .insight-card {
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    border: 1px solid #e2e8f0;
+                    display: flex;
+                    gap: 1rem;
+                }
+
+                .insight-card.recharge {
+                    border-left: 4px solid #3b82f6;
+                }
+
+                .insight-card.stressed {
+                    border-left: 4px solid #ef4444;
+                }
+
+                .insight-card i {
+                    font-size: 1.5rem;
+                    margin-top: 0.25rem;
+                }
+
+                .insight-card.recharge i {
+                    color: #3b82f6;
+                }
+
+                .insight-card.stressed i {
+                    color: #ef4444;
+                }
+
+                .insight-title {
+                    font-weight: 600;
+                    color: #1e293b;
+                    margin-bottom: 0.25rem;
+                }
+
+                .insight-months {
+                    font-weight: 600;
+                    color: #3b82f6;
+                    margin-bottom: 0.5rem;
+                }
+
+                .insight-card.stressed .insight-months {
+                    color: #ef4444;
+                }
+
+                .insight-description {
+                    font-size: 0.875rem;
+                    color: #64748b;
+                }
+
+                /* Seasonal Timeline */
+                .seasonal-timeline {
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .chart-container {
+                    position: relative;
+                    height: 350px;
+                    margin: 1rem 0;
+                    padding: 1rem;
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .seasonal-chart {
+                    width: 100% !important;
+                    height: 100% !important;
+                }
+
+                .chart-legend {
+                    display: flex;
+                    justify-content: center;
+                    gap: 1.5rem;
+                    margin-top: 1rem;
+                    padding: 1rem;
+                    background: #f1f5f9;
+                    border-radius: 6px;
+                    flex-wrap: wrap;
+                }
+
+                .legend-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.875rem;
+                    color: #475569;
+                }
+
+                .legend-color {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 4px;
+                    border: 2px solid #ffffff;
+                }
+
+                .legend-color.critical {
+                    background: rgba(220, 38, 38, 0.8);
+                }
+
+                .legend-color.low {
+                    background: rgba(245, 158, 11, 0.8);
+                }
+
+                .legend-color.moderate {
+                    background: rgba(59, 130, 246, 0.8);
+                }
+
+                .legend-color.good {
+                    background: rgba(5, 150, 105, 0.8);
+                }
+
+                /* Remove old timeline styles */
+                .timeline-container {
+                    display: none;
+                }
+
+                .timeline-month {
+                    display: none;
+                }
+
+                /* 5-Year Trend Enhanced */
+                .yearly-predictions-enhanced {
+                    background: #f8fafc;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    margin-bottom: 1rem;
+                }
+
+                .trend-description {
+                    background: #dbeafe;
+                    border-radius: 6px;
+                    padding: 0.75rem;
+                    margin-bottom: 1rem;
+                    border-left: 4px solid #3b82f6;
+                }
+
+                .trend-description p {
+                    margin: 0;
+                    font-size: 0.875rem;
+                    color: #1e40af;
+                }
+
+                .predictions-timeline-enhanced {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                    gap: 1rem;
+                }
+
+                .year-prediction-card.enhanced {
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    border: 1px solid #e2e8f0;
+                    text-align: center;
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+
+                .year-prediction-card.enhanced:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+                }
+
+                .year-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 0.75rem;
+                }
+
+                .change-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 4px;
+                }
+
+                .change-indicator.increasing {
+                    color: #dc2626;
+                    background: #fef2f2;
+                }
+
+                .change-indicator.decreasing {
+                    color: #059669;
+                    background: #ecfdf5;
+                }
+
+                .level-status {
+                    font-size: 0.75rem;
+                    color: #64748b;
+                    margin-top: 0.5rem;
+                    font-weight: 500;
+                }
+
+                /* Planning Guide Modal */
+                .planning-guide-modal .modal-content {
+                    max-width: 700px;
+                }
+
+                .planning-steps {
+                    display: grid;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+
+                .step-card {
+                    display: flex;
+                    gap: 1rem;
+                    background: white;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .step-number {
+                    width: 32px;
+                    height: 32px;
+                    background: #3b82f6;
+                    color: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 600;
+                    flex-shrink: 0;
+                }
+
+                .step-content h4 {
+                    margin: 0 0 0.5rem 0;
+                    color: #1e293b;
+                }
+
+                .step-content ul {
+                    margin: 0;
+                    padding-left: 1rem;
+                }
+
+                .step-content li {
+                    margin-bottom: 0.25rem;
+                    color: #64748b;
+                }
+
+                .planning-tips {
+                    background: #f1f5f9;
+                    border-radius: 8px;
+                    padding: 1rem;
+                }
+
+                .tips-grid {
+                    display: grid;
+                    gap: 0.75rem;
+                    margin-top: 1rem;
+                }
+
+                .tip-item {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.75rem;
+                    padding: 0.75rem;
+                    background: white;
+                    border-radius: 6px;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .tip-item i {
+                    color: #3b82f6;
+                    margin-top: 0.125rem;
+                    flex-shrink: 0;
+                }
+
+                .tip-item span {
+                    font-size: 0.875rem;
+                    color: #475569;
+                    line-height: 1.5;
+                }
+
+                @keyframes slideInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                /* Responsive Design for Enhanced Modal */
+                @media (max-width: 768px) {
+                    .enhanced-prediction .modal-content {
+                        max-width: 95vw;
+                        margin: 1rem;
+                    }
+
+                    .summary-cards {
+                        grid-template-columns: 1fr;
+                        gap: 1rem;
+                    }
+
+                    .drilling-summary {
+                        flex-direction: column;
+                        gap: 1rem;
+                    }
+
+                    .seasonal-insights {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .chart-container {
+                        height: 280px;
+                        padding: 0.5rem;
+                    }
+
+                    .chart-legend {
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 0.75rem;
+                    }
+
+                    .predictions-timeline-enhanced {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
                 }
             `;
             document.head.appendChild(style);

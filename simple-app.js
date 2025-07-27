@@ -903,12 +903,12 @@ app.post('/api/prediction/groundwater', async (req, res) => {
     const path = require('path');
     
     const pythonScriptPath = path.join(__dirname, 'server', 'ml_model', 'groundwater_predictor.py');
-    const modelPath = path.join(__dirname, '..', 'groundwater_model.pkl');
+    const modelPath = path.join(__dirname, '..', 'groundwater_xgboost_model.pkl');
     
     // Create a promise to handle the Python script execution
     const prediction = await new Promise((resolve, reject) => {
-      // Spawn Python process
-      const pythonProcess = spawn('python', [
+      // Spawn Python process with the correct Python executable
+      const pythonProcess = spawn('C:/Python313/python.exe', [
         '-c',
         `
 import sys

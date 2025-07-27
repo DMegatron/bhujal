@@ -2270,6 +2270,7 @@ body {
     max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
+    padding: 1rem;
 }
 
 .modal-header {
@@ -4532,9 +4533,13 @@ body {
 
 /* Groundwater Prediction Modal Styles */
 .groundwater-prediction-modal .modal-content {
-    max-width: 600px;
+    max-width: 650px;
     max-height: 90vh;
     overflow-y: auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 1rem;
 }
 
 .prediction-mode.map-mode-indicator {
@@ -4567,6 +4572,224 @@ body {
 
 .prediction-content {
     padding: 0;
+}
+
+/* Prediction Summary Cards */
+.prediction-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.current-level-card, .suitability-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.current-level-card:hover, .suitability-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.current-level-card .card-icon, .suitability-card .suitability-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.current-level-card .card-icon {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+}
+
+.suitability-card.suitable .suitability-icon {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.suitability-card.not-suitable .suitability-icon {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.card-content, .suitability-content {
+    flex: 1;
+}
+
+.card-content h3, .suitability-content h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.level-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.level-value .unit {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #64748b;
+    margin-left: 0.25rem;
+}
+
+/* Level status colors */
+.level-value.excellent, .prediction-level.excellent {
+    color: #059669;
+}
+
+.level-value.good, .prediction-level.good {
+    color: #10b981;
+}
+
+.level-value.moderate, .prediction-level.moderate {
+    color: #d97706;
+}
+
+.level-value.poor, .prediction-level.poor {
+    color: #ea580c;
+}
+
+.level-value.critical, .prediction-level.critical {
+    color: #dc2626;
+}
+
+.confidence-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.confidence-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.confidence-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+/* Yearly Predictions Timeline */
+.yearly-predictions {
+    margin-bottom: 1.5rem;
+}
+
+.yearly-predictions h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: #334155;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.predictions-timeline {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+}
+
+.year-prediction-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.year-prediction-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #0ea5e9, #10b981);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.year-prediction-card:hover {
+    border-color: #0ea5e9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.15);
+}
+
+.year-prediction-card:hover::before {
+    opacity: 1;
+}
+
+.year-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.prediction-level {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .prediction-summary {
+        grid-template-columns: 1fr;
+    }
+    
+    .predictions-timeline {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .year-prediction-card {
+        padding: 0.75rem;
+    }
+    
+    .prediction-level {
+        font-size: 1rem;
+    }
+    
+    .level-value {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .predictions-timeline {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .groundwater-prediction-modal .modal-content {
+        max-width: 95vw;
+        margin: 0.5rem;
+    }
 }
 
 .location-info {
@@ -4745,6 +4968,54 @@ body {
 }
 
 .month-prediction .level.poor {
+    color: #dc2626;
+}
+
+/* Yearly predictions styling */
+.yearly-predictions {
+    margin-bottom: 1.5rem;
+}
+
+.yearly-predictions h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: #334155;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.year-prediction {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.year-prediction .year {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.year-prediction .level {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.year-prediction .level.good {
+    color: #059669;
+}
+
+.year-prediction .level.moderate {
+    color: #d97706;
+}
+
+.year-prediction .level.poor {
     color: #dc2626;
 }
 
