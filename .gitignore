@@ -161,9 +161,3 @@ coverage/
 ecosystem.config.js
 .pm2/
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> main
-*.pkl
