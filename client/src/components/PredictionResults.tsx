@@ -7,16 +7,14 @@ interface PredictionResultsProps {
 }
 
 const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClose }) => {
-  const getSuitabilityColor = (suitable?: boolean) => {
-    return suitable ? 'text-green-600' : 'text-red-600';
-  };
+  const getSuitabilityColor = (suitable?: boolean) =>
+    suitable ? 'text-green-600' : 'text-red-600';
 
-  const getSuitabilityBg = (suitable?: boolean) => {
-    return suitable ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
-  };
+  const getSuitabilityBg = (suitable?: boolean) =>
+    suitable ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
 
   const getWaterLevelColor = (level?: number) => {
-    if (!level) return 'text-gray-400';
+    if (level === undefined) return 'text-gray-400';
     if (level > 20) return 'text-green-600';
     if (level > 10) return 'text-yellow-600';
     return 'text-red-600';
@@ -92,7 +90,6 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
           </div>
         )}
 
-
         {/* Recommendations */}
         {(prediction.recommendations?.length ?? 0) > 0 && (
           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
@@ -107,8 +104,9 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
             </ul>
           </div>
         )}
+      </div>
 
-
+      {/* Close Button */}
       <div className="mt-6 flex space-x-3">
         <button
           onClick={onClose}
