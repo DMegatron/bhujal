@@ -2,20 +2,21 @@ import React from 'react';
 import { PredictionResult } from '../types';
 
 interface PredictionResultsProps {
-  prediction: PredictionResult;
+  prediction: Partial<PredictionResult>; // Use Partial to allow missing fields
   onClose: () => void;
 }
 
 const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClose }) => {
-  const getSuitabilityColor = (suitable: boolean) => {
+  const getSuitabilityColor = (suitable?: boolean) => {
     return suitable ? 'text-green-600' : 'text-red-600';
   };
 
-  const getSuitabilityBg = (suitable: boolean) => {
+  const getSuitabilityBg = (suitable?: boolean) => {
     return suitable ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
   };
 
-  const getWaterLevelColor = (level: number) => {
+  const getWaterLevelColor = (level?: number) => {
+    if (!level) return 'text-gray-400';
     if (level > 20) return 'text-green-600';
     if (level > 10) return 'text-yellow-600';
     return 'text-red-600';
@@ -42,8 +43,8 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
         <div className="bg-gray-50 p-3 rounded-lg">
           <h4 className="font-medium text-gray-700 mb-1">Location</h4>
           <p className="text-sm text-gray-600">
-            Lat: {prediction.location.latitude.toFixed(6)}, 
-            Lng: {prediction.location.longitude.toFixed(6)}
+            Lat: {prediction.location?.latitude?.toFixed(6) ?? '-'}, 
+            Lng: {prediction.location?.longitude?.toFixed(6) ?? '-'}
           </p>
         </div>
 
@@ -51,7 +52,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
         <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
           <h4 className="font-medium text-gray-700 mb-1">Current Water Level</h4>
           <p className={`text-xl font-semibold ${getWaterLevelColor(prediction.currentWaterLevel)}`}>
-            {prediction.currentWaterLevel.toFixed(2)} meters
+            {prediction.currentWaterLevel?.toFixed(2) ?? '-'} meters
           </p>
         </div>
 
@@ -59,7 +60,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
         <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
           <h4 className="font-medium text-gray-700 mb-1">Predicted Water Level (Next 6 Months)</h4>
           <p className={`text-xl font-semibold ${getWaterLevelColor(prediction.futureWaterLevel)}`}>
-            {prediction.futureWaterLevel.toFixed(2)} meters
+            {prediction.futureWaterLevel?.toFixed(2) ?? '-'} meters
           </p>
         </div>
 
@@ -70,12 +71,12 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
             {prediction.isSuitableForBorewell ? '✓ Suitable' : '✗ Not Suitable'}
           </p>
           <p className="text-sm text-gray-600 mt-1">
-            Confidence: {(prediction.confidence * 100).toFixed(1)}%
+            Confidence: {(prediction.confidence ?? 0 * 100).toFixed(1)}%
           </p>
         </div>
 
         {/* Monthly Predictions */}
-        {prediction.monthlyPredictions && prediction.monthlyPredictions.length > 0 && (
+        {prediction.monthlyPredictions?.length > 0 && (
           <div className="bg-gray-50 p-3 rounded-lg">
             <h4 className="font-medium text-gray-700 mb-2">Monthly Predictions</h4>
             <div className="space-y-1">
@@ -83,7 +84,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
                 <div key={index} className="flex justify-between text-sm">
                   <span className="text-gray-600">{monthPred.month}</span>
                   <span className={`font-medium ${getWaterLevelColor(monthPred.predictedLevel)}`}>
-                    {monthPred.predictedLevel.toFixed(2)}m
+                    {monthPred.predictedLevel?.toFixed(2) ?? '-'}m
                   </span>
                 </div>
               ))}
@@ -92,7 +93,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
         )}
 
         {/* Recommendations */}
-        {prediction.recommendations && prediction.recommendations.length > 0 && (
+        {prediction.recommendations?.length > 0 && (
           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
             <h4 className="font-medium text-gray-700 mb-2">Recommendations</h4>
             <ul className="text-sm text-gray-600 space-y-1">
