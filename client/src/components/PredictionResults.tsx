@@ -76,11 +76,11 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
         </div>
 
         {/* Monthly Predictions */}
-        {prediction.monthlyPredictions?.length > 0 && (
+        {(prediction.monthlyPredictions?.length ?? 0) > 0 && (
           <div className="bg-gray-50 p-3 rounded-lg">
             <h4 className="font-medium text-gray-700 mb-2">Monthly Predictions</h4>
             <div className="space-y-1">
-              {prediction.monthlyPredictions.slice(0, 6).map((monthPred, index) => (
+              {prediction.monthlyPredictions!.slice(0, 6).map((monthPred, index) => (
                 <div key={index} className="flex justify-between text-sm">
                   <span className="text-gray-600">{monthPred.month}</span>
                   <span className={`font-medium ${getWaterLevelColor(monthPred.predictedLevel)}`}>
@@ -92,8 +92,9 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
           </div>
         )}
 
+
         {/* Recommendations */}
-        {prediction.recommendations?.length > 0 && (
+        {(prediction.recommendations?.length ?? 0) > 0 && (
           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
             <h4 className="font-medium text-gray-700 mb-2">Recommendations</h4>
             <ul className="text-sm text-gray-600 space-y-1">
