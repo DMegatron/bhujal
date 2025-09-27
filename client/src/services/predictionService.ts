@@ -1,31 +1,5 @@
 import api from './api';
-
-export interface PredictionRequest {
-  latitude: number;
-  longitude: number;
-}
-
-export interface PredictionResult {
-  currentWaterLevel: number;
-  futureWaterLevel: number;
-  isSuitableForBorewell: boolean;
-  confidence: number;
-  location: {
-    latitude: number;
-    longitude: number;
-  };
-  recommendations: string[];
-  monthlyPredictions?: Array<{
-    month: string;
-    predictedLevel: number;
-  }>;
-}
-
-export interface PredictionResponse {
-  success: boolean;
-  data?: PredictionResult;
-  message?: string;
-}
+import { PredictionRequest, PredictionResult, PredictionResponse } from '../types';
 
 class PredictionService {
   async predictGroundwaterLevel(request: PredictionRequest): Promise<PredictionResponse> {
