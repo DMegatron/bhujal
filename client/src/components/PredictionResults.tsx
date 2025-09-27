@@ -98,7 +98,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
             <h4 className="font-medium text-gray-700 mb-2">Recommendations</h4>
             <ul className="text-sm text-gray-600 space-y-1">
-              {prediction.recommendations.map((rec, index) => (
+              {prediction.recommendations?.map((rec, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-yellow-600 mr-2">•</span>
                   <span>{rec}</span>
@@ -107,7 +107,7 @@ const PredictionResults: React.FC<PredictionResultsProps> = ({ prediction, onClo
             </ul>
           </div>
         )}
-      </div>
+
 
       <div className="mt-6 flex space-x-3">
         <button
